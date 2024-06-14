@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "../DynamicArchipelago"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"Lua.diagnostics.globals": [
+			"CreateObjectPool",
+			"CLASS_ICON_TCOORDS",
+			"class",
+			"InspectFrame",
+			"UNKNOWN",
+			"LE_PARTY_CATEGORY_HOME",
+			"LE_PARTY_CATEGORY_INSTANCE"
+		]
+	}
+}

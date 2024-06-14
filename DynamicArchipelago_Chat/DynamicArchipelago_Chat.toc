@@ -1,0 +1,14 @@
+## Interface: 100206
+## Title: Dynamic Archipelago - Chat
+## Notes: Chat Notifications for Dynamic Archipelago
+## Authors: Sel
+## Version: 10.2.7
+## IconTexture: Interface\AddOns\DynamicArchipelago\Media\logo
+## RequiredDeps: DynamicArchipelago
+## LoadOnDemand: 0
+## DefaultState: enabled
+## SavedVariables: DynamicArchipelagoDB
+## X-Curse-Project-ID: TODO
+
+Libs/Libs.xml
+DynamicArchipelago_Chat.lua

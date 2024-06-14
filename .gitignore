@@ -1,0 +1,7 @@
+*
+!*/
+!/.gitignore
+!DynamicArchipelago/**
+!DynamicArchipelago_Chat/**
+
+**/.DS_Store
