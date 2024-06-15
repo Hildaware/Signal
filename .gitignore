@@ -1,6 +1,7 @@
 *
 !*/
 !/.gitignore
+!/DynamicArchipelago.code-workspace
 !DynamicArchipelago/**
 !DynamicArchipelago_Chat/**
 

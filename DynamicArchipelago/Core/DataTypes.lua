@@ -9,6 +9,12 @@ local types = addon:NewModule('Types')
 ---@field Wipe function
 
 ---@class AnimatedFrame : Frame
----@field animation AnimationGroup
+---@field animation AnimationGroup?
+---@field animationIn AnimationGroup?
+---@field animationOut AnimationGroup?
+
+---@class Coords
+---@field X number
+---@field Y number
 
 types:Enable()

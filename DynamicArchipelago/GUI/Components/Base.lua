@@ -154,10 +154,6 @@ function baseFrame:_DoCreate()
 
     i.frame = frame
 
-    local backgroundTex = frame:CreateTexture(nil, 'ARTWORK')
-    backgroundTex:SetAllPoints(frame)
-    backgroundTex:SetColorTexture(0, 0, 0, 0.65)
-
     local content = CreateFrame('Frame', nil, frame)
     content:SetPoint('TOPLEFT', padding, -padding)
     content:SetPoint('BOTTOMRIGHT', -padding, padding)
@@ -177,11 +173,8 @@ function baseFrame:_DoCreate()
 
     local inAnim = frame:CreateAnimationGroup('BaseIn')
 
-    -- local trans = inAnim:CreateAnimation('Translation')
-    -- trans:SetOffset(0, -128)
-    -- trans:SetDuration(0.5)
     local fade = inAnim:CreateAnimation('Alpha')
-    fade:SetDuration(1)
+    fade:SetDuration(0.5)
     fade:SetFromAlpha(0.0)
     fade:SetToAlpha(1.0)
 
@@ -189,15 +182,13 @@ function baseFrame:_DoCreate()
 
     local outAnim = frame:CreateAnimationGroup('BaseOut')
 
-    -- local transOut = outAnim:CreateAnimation('Translation')
-    -- transOut:SetOffset(0, 128)
-    -- transOut:SetDuration(0.5)
     local fadeOut = outAnim:CreateAnimation('Alpha')
-    fadeOut:SetDuration(1)
+    fadeOut:SetDuration(0.25)
     fadeOut:SetFromAlpha(1.0)
     fadeOut:SetToAlpha(0.0)
 
     outAnim:SetScript('OnFinished', function()
+        i.frame:Hide()
         events:SendMessage('DYNAMIC_ARCHIPELAGO_ITEM_TIMER_END', i)
     end)
 

@@ -13,6 +13,8 @@ local optionsFrame
 
 ---@class AceConfig.OptionsTable
 local settings = {
+    type = 'group',
+    args = {}
     -- type = 'group',
     -- args = {
     --     zoneview = {

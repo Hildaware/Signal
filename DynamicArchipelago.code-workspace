@@ -1,10 +1,10 @@
 {
 	"folders": [
 		{
-			"path": "../DynamicArchipelago"
+			"path": "DynamicArchipelago"
 		},
 		{
-			"path": "."
+			"path": "DynamicArchipelago_Chat"
 		}
 	],
 	"settings": {

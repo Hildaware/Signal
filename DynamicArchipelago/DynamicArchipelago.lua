@@ -3,8 +3,7 @@ local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 ---@cast addon +AceHook-3.0
 
 function addon:OnInitialize()
-    -- TODO: Create 'art' - top / bottom caps
-
+    -- TODO: AddonCompartment
     -- _G['AddonCompartmentFrame']:RegisterAddon({
     --     text = "Ride the Wind",
     --     icon = "Interface\\AddOns\\RideTheWind\\Media\\logo.blp",
