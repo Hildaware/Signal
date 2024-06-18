@@ -196,11 +196,11 @@ function core.proto:RemoveChild(widget)
     end
 end
 
+--#endregion
+
 function core:OnInitialize()
     self:Create()
 end
-
---#endregion
 
 function core:Create()
     local position = database:GetWidgetPosition()

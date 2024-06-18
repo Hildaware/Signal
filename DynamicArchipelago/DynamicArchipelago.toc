@@ -5,6 +5,7 @@
 ## Version: 10.2.7
 ## IconTexture: Interface\AddOns\DynamicArchipelago\Media\logo
 ## SavedVariables: DynamicArchipelagoDB
+## OptionalDeps: Masque
 ## X-Curse-Project-ID: TODO
 
 Libs/Libs.xml

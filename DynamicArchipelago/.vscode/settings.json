@@ -54,7 +54,8 @@
         "StaticPopupDialogs",
         "MAX_TALENT_TABS",
         "StaticPopup_Show",
-        "Add"
+        "Add",
+        "WorldMapFrame"
     ],
     "Lua.diagnostics.disable": [
         "duplicate-set-field",

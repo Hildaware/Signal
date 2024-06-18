@@ -1,5 +1,8 @@
 <UI xmlns='http://www.blizzard.com/wow/ui/'   xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'   xsi:schemaLocation='http://www.blizzard.com/wow/ui/'>
-    <Include file = 'Components/Base.lua' />
-    <!-- <Include file = 'Components/Chat.lua' /> -->
+    <Include file = 'Components/Templates/Base.lua' />
+    <Include file = 'Components/Templates/IslandSmall.lua' />
+    <Include file = 'Components/Templates/IslandLarge.lua' />
+    <Include file = 'IslandWidgets/Location.lua' />
+    <Include file = 'Components/Island.lua' />
     <Include file = 'Core.lua' />
 </UI>

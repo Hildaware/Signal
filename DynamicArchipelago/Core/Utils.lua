@@ -65,6 +65,12 @@ function utils:GetClassColor(engClass)
     return classColor
 end
 
+function utils:Round(number, decimalPoints)
+    local precision = 10 ^ (decimalPoints or 0)
+    number = number + (precision / 2)
+    return math.floor(number / precision) * precision
+end
+
 local CS = CreateFrame("ColorSelect")
 
 function utils:GetSmudgeColorRGB(colorA, colorB, percentage)
