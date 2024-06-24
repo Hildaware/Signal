@@ -6,6 +6,9 @@ local Masque = LibStub('Masque', true)
 ---@class FrameHelpers: AceModule
 local helpers = addon:NewModule('FrameHelpers')
 
+---@class Utils: AceModule
+local utils = addon:GetModule('Utils')
+
 helpers.data = {
     masqueGroup = nil
 }
@@ -19,27 +22,34 @@ end
 
 --- Builds the Event Frame for a Base Island.
 ---@param parent BaseIsland
+---@param scriptType ScriptFrame
 ---@param enableFunc function
 ---@param disableFunc function?
 ---@return IslandEventFrame
-function helpers:CreateIslandEventFrame(parent, enableFunc, disableFunc)
+function helpers:CreateIslandEventFrame(parent, scriptType, enableFunc, disableFunc)
     ---@type IslandEventFrame
     local eventFrame = CreateFrame('Frame', nil, parent)
     eventFrame.lastUpdated = 0
 
     eventFrame.OnEnable = function()
-        eventFrame:SetScript('OnUpdate', function(eFrame, elapsed)
-            enableFunc(eFrame, elapsed)
-        end)
+        if scriptType == 'OnUpdate' then
+            eventFrame:SetScript(scriptType, function(eFrame, eventName, args)
+                enableFunc(eFrame, eventName, args)
+            end)
+        else
+            eventFrame:SetScript(scriptType, function(eFrame, arg)
+                enableFunc(eFrame, arg)
+            end)
+        end
     end
 
     eventFrame.OnDisable = function()
         if disableFunc ~= nil then
-            eventFrame:SetScript('OnUpdate', function(eFrame, elapsed)
+            eventFrame:SetScript(scriptType, function(eFrame, arg)
                 disableFunc()
             end)
         else
-            eventFrame:SetScript('OnUpdate', nil)
+            eventFrame:SetScript(scriptType, nil)
         end
     end
 
@@ -65,6 +75,27 @@ function helpers:CreateIconFrame(iconId)
     bgTex:AddMaskTexture(mask)
 
     return main
+end
+
+---@return CircularProgress
+function helpers:CreateCircularProgressFrame()
+    ---@class CircularProgressFrame: AceModule
+    local circ = addon:GetModule('CircularProgressFrame')
+
+    local prog = circ:CreateSpinner()
+    prog.widget:SetPoint('CENTER')
+    prog.widget:SetSize(64, 64)
+    prog:SetTexture(utils:GetMediaDir() .. 'Art\\circular_progress')
+
+    prog:SetClockwise(true)
+    prog:SetReverse(false)
+
+    local bgTex = prog.widget:CreateTexture(nil, 'ARTWORK')
+    bgTex:SetAllPoints(prog.widget)
+    bgTex:SetTexture(utils:GetMediaDir() .. 'Art\\circular_progress')
+    bgTex:SetVertexColor(1, 1, 1, 0.25)
+
+    return prog
 end
 
 helpers:Enable()

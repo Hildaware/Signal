@@ -41,7 +41,20 @@
 			"QuestMapFrame",
 			"SMALL",
 			"LARGE",
-			"enabled"
+			"enabled",
+			"UIDropDownMenu_Initialize",
+			"UIDropDownMenu_SetSelectedValue",
+			"UIDropDownMenu_SetSelectedID",
+			"ColorPickerFrame",
+			"ColorSwatch",
+			"InterfaceOptionsFrame_OpenToCategory",
+			"UIDropDownMenu_SetText",
+			"UIDropDownMenu_AddButton",
+			"OptionsListButtonToggle_OnClick",
+			"UIDropDownMenu_GetSelectedValue",
+			"UIDropDownMenu_SetButtonWidth",
+			"UIDropDownMenu_SetWidth",
+			"UIDropDownMenu_GetSelectedID"
 		]
 	}
 }

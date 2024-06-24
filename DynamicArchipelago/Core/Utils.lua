@@ -65,10 +65,20 @@ function utils:GetClassColor(engClass)
     return classColor
 end
 
+---@param number number
+---@param decimalPoints number
+---@return number
 function utils:Round(number, decimalPoints)
-    local precision = 10 ^ (decimalPoints or 0)
-    number = number + (precision / 2)
-    return math.floor(number / precision) * precision
+    if type(number) ~= 'number' then
+        return number
+    end
+
+    if decimalPoints and decimalPoints > 0 then
+        local mult = 10 ^ decimalPoints
+        return floor(number * mult + 0.5) / mult
+    end
+
+    return floor(number + 0.5)
 end
 
 local CS = CreateFrame("ColorSelect")

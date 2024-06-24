@@ -13,6 +13,7 @@ large.baseProto = {}
 function large.baseProto:Connect()
     if self.child == nil or self.child.eventFrame == nil then return end
     self.child.eventFrame:OnEnable()
+    self.child.eventFrame:Show()
     -- Enable the event frame if it has one
     -- Enable the Events func? if it has one
 end
@@ -21,6 +22,7 @@ function large.baseProto:Disconnect()
     -- Disable the event frame
     if self.child == nil or self.child.eventFrame == nil then return end
     self.child.eventFrame:OnDisable()
+    self.child.eventFrame:Hide()
 end
 
 ---@param widget DynamicArchipelagoItem|Frame

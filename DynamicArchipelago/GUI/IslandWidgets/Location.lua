@@ -58,7 +58,7 @@ function location:Create()
         end
     end
 
-    helper:CreateIslandEventFrame(smallContent, smallOnEnable)
+    helper:CreateIslandEventFrame(smallContent, 'OnUpdate', smallOnEnable)
 
     local largeIsland = _G['DynamicArchipelago'].IslandLarge:Create()
 
@@ -102,7 +102,7 @@ function location:Create()
         end
     end
 
-    helper:CreateIslandEventFrame(largeContent, largeOnEnable)
+    helper:CreateIslandEventFrame(largeContent, 'OnUpdate', largeOnEnable)
 
     islandData.Small = smallIsland
     islandData.Full = largeIsland

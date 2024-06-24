@@ -171,7 +171,7 @@ function baseFrame:_DoCreate()
 
     --#region Animations
 
-    local inAnim = frame:CreateAnimationGroup('BaseIn')
+    local inAnim = frame:CreateAnimationGroup()
 
     local fade = inAnim:CreateAnimation('Alpha')
     fade:SetDuration(0.5)
@@ -180,7 +180,7 @@ function baseFrame:_DoCreate()
 
     i.frame.animationIn = inAnim
 
-    local outAnim = frame:CreateAnimationGroup('BaseOut')
+    local outAnim = frame:CreateAnimationGroup()
 
     local fadeOut = outAnim:CreateAnimation('Alpha')
     fadeOut:SetDuration(0.25)

@@ -13,6 +13,7 @@ small.baseProto = {}
 function small.baseProto:Connect()
     if self.child == nil or self.child.eventFrame == nil then return end
     self.child.eventFrame:OnEnable()
+    self.child.eventFrame:Show()
     -- Enable the event frame if it has one
     -- Enable the Events func? if it has one
 end
@@ -21,6 +22,7 @@ function small.baseProto:Disconnect()
     -- Disable the event frame
     if self.child == nil or self.child.eventFrame == nil then return end
     self.child.eventFrame:OnDisable()
+    self.child.eventFrame:Hide()
 end
 
 ---@param widget DynamicArchipelagoItem|Frame
@@ -66,7 +68,7 @@ function small:_DoCreate()
     i.child = nil
 
     local frame = CreateFrame('Frame', nil, UIParent)
-    frame:SetFrameStrata("FULLSCREEN_DIALOG")
+    frame:SetFrameStrata("DIALOG")
     frame:SetSize(128, 128 / 4) -- TODO: From Config
     frame:Hide()
 

@@ -62,6 +62,7 @@ function island.proto:EnableIsland(islandType)
     enableFrame.widget:SetParent(content.widget)
     enableFrame.widget:SetAllPoints(content.widget)
     enableFrame.widget:Show()
+
     enableFrame:Connect()
 
     if content.OnClick ~= nil then
@@ -95,6 +96,72 @@ function island:OnInitialize()
     ---@type LocationWidget
     local location = addon:GetModule('LocationWidget')
     self.data:SetDataContent(location:Create())
+
+    -- ---@type ExperienceWidget
+    -- local exp = addon:GetModule('ExperienceWidget')
+    -- self.data:SetDataContent(exp:Create())
+end
+
+function island.proto:StartAnimationIn()
+    C_Timer.NewTicker(0.001,
+        function(ticker)
+            local expectedWidgetHeight = hoverWidth / 4
+            local expectedWidgetWidth = hoverWidth
+
+            local currentHeight = self.widget:GetHeight(true)
+            local currentWidth = self.widget:GetWidth(true)
+            -- Scale the height
+            if currentHeight < expectedWidgetHeight then
+                local newHeight = currentHeight + 3
+                self.widget:SetHeight(min(newHeight, expectedWidgetHeight))
+            end
+            -- Scale the width
+            if currentWidth < expectedWidgetWidth then
+                local newWidth = currentWidth + 12
+                self.widget:SetWidth(min(newWidth, expectedWidgetWidth))
+            end
+
+            -- Anim Finished
+            if self.widget:GetWidth(true) >= expectedWidgetWidth and self.widget:GetHeight(true) >= expectedWidgetHeight then
+                self.widget:SetHeight(expectedWidgetHeight)
+                self.widget:SetWidth(expectedWidgetWidth)
+
+                island.data:EnableIsland(ISLAND_TYPE.FULL)
+                ticker:Cancel()
+            end
+        end,
+        40)
+end
+
+function island.proto:StartAnimationOut()
+    C_Timer.NewTicker(0.001,
+        function(ticker)
+            local expectedWidgetHeight = dataFilledWidth / 4
+            local expectedWidgetWidth = dataFilledWidth
+
+            local currentHeight = self.widget:GetHeight(true)
+            local currentWidth = self.widget:GetWidth(true)
+            -- Scale the height
+            if currentHeight > expectedWidgetHeight then
+                local newHeight = currentHeight - 3
+                self.widget:SetHeight(max(newHeight, expectedWidgetHeight))
+            end
+            -- Scale the width
+            if currentWidth > expectedWidgetWidth then
+                local newWidth = currentWidth - 12
+                self.widget:SetWidth(max(newWidth, expectedWidgetWidth))
+            end
+
+            -- Anim Finished
+            if self.widget:GetWidth(true) <= expectedWidgetWidth and self.widget:GetHeight(true) <= expectedWidgetHeight then
+                self.widget:SetHeight(expectedWidgetHeight)
+                self.widget:SetWidth(expectedWidgetWidth)
+
+                island.data:EnableIsland(ISLAND_TYPE.SMALL)
+                ticker:Cancel()
+            end
+        end,
+        40)
 end
 
 function island:Create()
@@ -109,38 +176,17 @@ function island:Create()
     main:SetPoint('CENTER')
     -- main:SetPoint('CENTER', UIParent, 'BOTTOM', position.X, position.Y)
 
-    local animOut = main:CreateAnimationGroup('Grow')
-    local grow = animOut:CreateAnimation('Scale')
-    grow:SetDuration(0.1)
-    grow:SetScaleFrom(1.0, 1.0)
-    grow:SetScaleTo(2.0, 2.0)
-    animOut:SetScript('OnFinished', function()
-        self.data:EnableIsland(ISLAND_TYPE.FULL)
-    end)
-
-    main.animationOut = animOut
-
-    local animIn = main:CreateAnimationGroup('Grow')
-    local shrink = animIn:CreateAnimation('Scale')
-    shrink:SetDuration(0.1)
-    shrink:SetScaleFrom(1.0, 1.0)
-    shrink:SetScaleTo(0.5, 0.5)
-    animIn:SetScript('OnFinished', function()
-        self.data:EnableIsland(ISLAND_TYPE.SMALL)
-    end)
-
-    main.animationIn = animIn
-
+    -- Custom Animations
     main:SetScript('OnEnter', function()
         self.data.widget.Content.Small.widget:Hide()
         self.data.widget.Content.Small:Disconnect()
-        self.data.widget.animationOut:Play()
+        self.data:StartAnimationIn()
     end)
 
     main:SetScript('OnLeave', function()
         self.data.widget.Content.Full.widget:Hide()
         self.data.widget.Content.Full:Disconnect()
-        self.data.widget.animationIn:Play()
+        self.data:StartAnimationOut()
     end)
 
     local bgTex = main:CreateTexture(nil, 'ARTWORK')

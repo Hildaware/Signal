@@ -43,7 +43,7 @@ local nonExpandedWidth = 64
 ---@param onFinished function?
 ---@return AnimationGroup
 local function CreateCapAnimationIn(frame, onFinished)
-    local anim = frame:CreateAnimationGroup('CapAnimationIn')
+    local anim = frame:CreateAnimationGroup()
 
     local fade = anim:CreateAnimation('Alpha')
     fade:SetDuration(0.55)
@@ -67,7 +67,7 @@ end
 ---@param frame Frame
 ---@return AnimationGroup
 local function CreateCapAnimationOut(frame)
-    local anim = frame:CreateAnimationGroup('CapAnimationOut')
+    local anim = frame:CreateAnimationGroup()
 
     local fade = anim:CreateAnimation('Alpha')
     fade:SetDuration(0.55)
