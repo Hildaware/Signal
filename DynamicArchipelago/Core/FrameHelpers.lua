@@ -98,12 +98,11 @@ function helpers:CreateCircularProgressFrame()
     return prog
 end
 
-helpers:Enable()
-
-
 function helpers:ApplyMasqueGroup(frame)
     if self.data.masqueGroup == nil then return end
 
     ---@diagnostic disable-next-line: undefined-field
     self.data.masqueGroup:AddButton(frame)
 end
+
+helpers:Enable()

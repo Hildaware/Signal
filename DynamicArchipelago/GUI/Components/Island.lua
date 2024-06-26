@@ -11,29 +11,16 @@ local database = addon:GetModule('Database')
 ---@class Utils: AceModule
 local utils = addon:GetModule('Utils')
 
--- TODO: Configurable
-local baseWidth = 64
-local dataFilledWidth = 128
-local hoverWidth = 256 -- 256?
--- Height will always be width / 4
-
-ISLAND_NAME = {
-    SMALL = 'Small',
-    FULL = 'Full'
-}
-
-ISLAND_TYPE = {
-    SMALL = 1,
-    FULL = 2
-}
-
-ISLAND_BASE_PADDING = 4
+---@class Animations: AceModule
+local animations = addon:GetModule('Animations')
 
 ---@class (exact) IslandLife
 ---@field widget IslandFrame
 ---@field SetDataContent function
 ---@field EnableIsland function
 ---@field SetWidgetSize function
+---@field FadeIn function
+---@field FadeOut function
 island.proto = {}
 
 --#region IslandLife
@@ -41,18 +28,18 @@ island.proto = {}
 ---@param islandType number
 function island.proto:EnableIsland(islandType)
     local content = self.widget.Content
-    local widgetSize = dataFilledWidth
+    local widgetSize = ISLAND_SMALL_WIDTH
 
     ---@type BaseLargeIsland|BaseSmallIsland
     local enableFrame = nil
 
     if islandType == ISLAND_TYPE.SMALL then
         enableFrame = content[ISLAND_NAME.SMALL]
-        widgetSize = dataFilledWidth
+        widgetSize = ISLAND_SMALL_WIDTH
     end
     if islandType == ISLAND_TYPE.FULL then
         enableFrame = content[ISLAND_NAME.FULL]
-        widgetSize = hoverWidth
+        widgetSize = ISLAND_FULL_WIDTH
     end
 
     if enableFrame == nil then return end
@@ -86,27 +73,11 @@ function island.proto:SetDataContent(content)
     self:EnableIsland(ISLAND_TYPE.SMALL)
 end
 
---#endregion
-
---#region Island
-
-function island:OnInitialize()
-    self:Create()
-
-    ---@type LocationWidget
-    local location = addon:GetModule('LocationWidget')
-    self.data:SetDataContent(location:Create())
-
-    -- ---@type ExperienceWidget
-    -- local exp = addon:GetModule('ExperienceWidget')
-    -- self.data:SetDataContent(exp:Create())
-end
-
 function island.proto:StartAnimationIn()
     C_Timer.NewTicker(0.001,
         function(ticker)
-            local expectedWidgetHeight = hoverWidth / 4
-            local expectedWidgetWidth = hoverWidth
+            local expectedWidgetHeight = ISLAND_FULL_WIDTH / 4
+            local expectedWidgetWidth = ISLAND_FULL_WIDTH
 
             local currentHeight = self.widget:GetHeight(true)
             local currentWidth = self.widget:GetWidth(true)
@@ -136,8 +107,8 @@ end
 function island.proto:StartAnimationOut()
     C_Timer.NewTicker(0.001,
         function(ticker)
-            local expectedWidgetHeight = dataFilledWidth / 4
-            local expectedWidgetWidth = dataFilledWidth
+            local expectedWidgetHeight = ISLAND_SMALL_WIDTH / 4
+            local expectedWidgetWidth = ISLAND_SMALL_WIDTH
 
             local currentHeight = self.widget:GetHeight(true)
             local currentWidth = self.widget:GetWidth(true)
@@ -164,17 +135,42 @@ function island.proto:StartAnimationOut()
         40)
 end
 
+function island.proto:FadeIn()
+    self.widget:Show()
+    animations:FadeIn(self.widget, 0.05)
+    self:EnableIsland(ISLAND_TYPE.SMALL)
+end
+
+function island.proto:FadeOut()
+    self.widget.Content.Small.widget:Hide()
+    self.widget.Content.Small:Disconnect()
+    self.widget.Content.Full.widget:Hide()
+    self.widget.Content.Full:Disconnect()
+
+    animations:FadeOut(self.widget, 0.05)
+end
+
+--#endregion
+
+function island:OnInitialize()
+    -- ---@type LocationWidget
+    -- local location = addon:GetModule('LocationWidget')
+    -- self.data:SetDataContent(location:Create())
+
+    -- ---@type ExperienceWidget
+    -- local exp = addon:GetModule('ExperienceWidget')
+    -- self.data:SetDataContent(exp:Create())
+end
+
+---@return IslandLife
 function island:Create()
     self.data = setmetatable({}, { __index = island.proto })
 
-    local position = database:GetWidgetPosition()
-
     ---@type IslandFrame
-    local main = CreateFrame('Frame', nil, UIParent)
-    main:SetWidth(baseWidth)
-    main:SetHeight(baseWidth / 4)
+    local main = CreateFrame('Frame', 'DynamicArchipelagoIsland', UIParent)
+    main:SetWidth(ISLAND_BASE_WIDTH)
+    main:SetHeight(ISLAND_BASE_WIDTH / 4)
     main:SetPoint('CENTER')
-    -- main:SetPoint('CENTER', UIParent, 'BOTTOM', position.X, position.Y)
 
     -- Custom Animations
     main:SetScript('OnEnter', function()
@@ -193,25 +189,27 @@ function island:Create()
     bgTex:SetAllPoints(main)
     bgTex:SetColorTexture(0, 0, 0, 0.75)
 
-    local mask = main:CreateMaskTexture()
-    mask:SetAllPoints(bgTex)
-    mask:SetTexture(utils:GetMediaDir() .. 'Art\\island_mask', 'CLAMPTOBLACKADDITIVE',
+    local islandMask = main:CreateMaskTexture()
+    islandMask:SetAllPoints(bgTex)
+    islandMask:SetTexture(utils:GetMediaDir() .. 'Art\\island_mask', 'CLAMPTOBLACKADDITIVE',
         'CLAMPTOBLACKADDITIVE')
-    bgTex:AddMaskTexture(mask)
+    bgTex:AddMaskTexture(islandMask)
 
     ---@type AnimatedFrame
-    local content = CreateFrame('Frame', nil, main)
-    content:SetAllPoints(main)
+    local islandContent = CreateFrame('Frame', nil, main)
+    islandContent:SetAllPoints(main)
+
+    main:Hide()
 
     main.Content = {
-        widget = content,
+        widget = islandContent,
         Small = nil,
         Full = nil
     }
 
     self.data.widget = main
-end
 
---#endregion
+    return self.data
+end
 
 island:Enable()

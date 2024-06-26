@@ -17,6 +17,10 @@ local types = addon:NewModule('Types')
 ---@field X number
 ---@field Y number
 
+---@class BaseFrame : Frame
+---@field bg Texture
+---@field mask MaskTexture
+
 --#region IslandContent
 
 ---@class (exact) IslandContent

@@ -16,7 +16,7 @@ function location:Create()
     ---@type IslandContent
     local islandData = { Small = nil, Full = nil, widget = nil }
 
-    ---@class Island: AceModule
+    ---@class ArchipelagoWidget: AceModule
     local island = addon:GetModule('Island')
 
     local smallIsland = _G['DynamicArchipelago'].IslandSmall:Create()

@@ -14,22 +14,28 @@ local utils = addon:GetModule('Utils')
 ---@class Events: AceModule
 local events = addon:GetModule('Events')
 
+---@class Animations: AceModule
+local animations = addon:GetModule('Animations')
+
 ---@class CoreContent : AnimatedFrame
 ---@field children BaseArchipelagoItem[]
 ---@field height number
 
----@class Archipelago : Frame
+---@class ArchipelagoWidget : Frame
 ---@field Base CoreContent
----@field TopCap AnimatedFrame
----@field BottomCap AnimatedFrame
+---@field TopCap BaseFrame
+---@field BottomCap BaseFrame
 ---@field height number
+---@field GrowAnimation function
+---@field ShrinkAnimation function
+core.widget = {}
 
----@class (exact) CoreData
+---@class (exact) ArchipelagoCore
 ---@field AddChild function
 ---@field RemoveChild function
 ---@field itemData table
 ---@field items table
----@field widget Archipelago
+---@field widget ArchipelagoWidget
 ---@field isMaximized boolean
 core.proto = {}
 
@@ -37,7 +43,35 @@ local expandedCapHeight = 16
 local nonExpandedCapHeight = 8
 local nonExpandedWidth = 64
 
+local CORE_BASE_PADDING = 8
+
+-- TODO: Animations
+
 --#region Core Methods
+
+function core.widget:GrowAnimation()
+    C_Timer.NewTicker(0.001,
+        function(ticker)
+            local expectedWidth = 512
+
+            if animations:Grow(self, nil, expectedWidth, nil, 12) then
+                ticker:Cancel()
+            end
+        end,
+        256)
+end
+
+function core.widget:ShrinkAnimation()
+    C_Timer.NewTicker(0.001,
+        function(ticker)
+            local expectedWidth = ISLAND_SMALL_WIDTH
+
+            if animations:Shrink(self, nil, expectedWidth, nil, 12) then
+                ticker:Cancel()
+            end
+        end,
+        256)
+end
 
 ---@param frame Frame
 ---@param onFinished function?
@@ -199,132 +233,113 @@ end
 --#endregion
 
 function core:OnInitialize()
+    self.data = setmetatable({}, { __index = core.proto })
     self:Create()
 end
 
+---@return ArchipelagoCore
 function core:Create()
     local position = database:GetWidgetPosition()
     local width = database:GetWidgetWidth()
     local isLocked = database:GetWidgetState()
 
-    self.data = setmetatable({}, { __index = core.proto })
     self.data.items = {}
     self.data.itemData = {}
 
-    ---@type Archipelago
-    local arch = CreateFrame('Frame', nil, UIParent)
-    arch:SetWidth(nonExpandedWidth)
-    arch:SetHeight(nonExpandedCapHeight * 2)
-    arch:SetPoint('CENTER', UIParent, 'BOTTOM', position.X, position.Y)
-    arch:SetAlpha(0.25)
+    ---@type ArchipelagoWidget
+    local contentContainer = CreateFrame('Frame', 'DynamicArchipelagoCore', UIParent)
+    contentContainer.GrowAnimation = core.widget.GrowAnimation
+    contentContainer.ShrinkAnimation = core.widget.ShrinkAnimation
+    self.data.widget = contentContainer
 
-    --#region Top Cap
+    ---@type BaseFrame
+    local topContentCap = CreateFrame('Frame', nil, contentContainer)
+    topContentCap:SetPoint('TOPLEFT', contentContainer, 'TOPLEFT')
+    topContentCap:SetPoint('BOTTOMRIGHT', contentContainer, 'TOPRIGHT', 0, -16)
 
-    ---@type AnimatedFrame
-    local top = CreateFrame('Frame', nil, arch)
-    top:SetWidth(nonExpandedWidth)
-    top:SetHeight(nonExpandedCapHeight)
-    top:SetPoint('TOP')
+    topContentCap.bg = topContentCap:CreateTexture(nil, 'ARTWORK')
+    topContentCap.bg:SetAllPoints(topContentCap)
+    topContentCap.bg:SetColorTexture(0, 0, 0, 0.75)
 
-    local topAnimIn = CreateCapAnimationIn(top, function()
-        core.data.widget.TopCap:SetHeight(expandedCapHeight)
-    end)
-    top.animationIn = topAnimIn
+    topContentCap.mask = topContentCap:CreateMaskTexture()
+    topContentCap.mask:SetAllPoints(topContentCap.bg)
+    topContentCap.mask:SetTexture(utils:GetMediaDir() .. 'Art\\cap_mask', 'CLAMPTOBLACKADDITIVE',
+        'CLAMPTOBLACKADDITIVE')
+    topContentCap.bg:AddMaskTexture(topContentCap.mask)
 
-    local topAnimOut = CreateCapAnimationOut(top)
-    top.animationOut = topAnimOut
+    contentContainer.TopCap = topContentCap
 
-    local topTex = top:CreateTexture(nil, 'ARTWORK')
-    topTex:SetAllPoints(top)
-    topTex:SetTexture(utils:GetMediaDir() .. 'Art\\bg_top_sm')
-    topTex:SetVertexColor(0, 0, 0, 0.65)
+    ---@type BaseFrame
+    local bottomContentCap = CreateFrame('Frame', nil, contentContainer)
+    bottomContentCap:SetPoint('TOPLEFT', contentContainer, 'BOTTOMLEFT', 0, 16)
+    bottomContentCap:SetPoint('BOTTOMRIGHT')
 
-    arch.TopCap = top
+    bottomContentCap.bg = bottomContentCap:CreateTexture(nil, 'ARTWORK')
+    bottomContentCap.bg:SetAllPoints(bottomContentCap)
+    bottomContentCap.bg:SetColorTexture(0, 0, 0, 0.75)
 
-    --#endregion
+    bottomContentCap.mask = bottomContentCap:CreateMaskTexture()
+    bottomContentCap.mask:SetAllPoints(bottomContentCap.bg)
+    bottomContentCap.mask:SetTexture(utils:GetMediaDir() .. 'Art\\cap_mask', 'CLAMPTOBLACKADDITIVE',
+        'CLAMPTOBLACKADDITIVE')
+    bottomContentCap.mask:SetRotation(math.pi)
+    bottomContentCap.bg:AddMaskTexture(bottomContentCap.mask)
 
-    --#region Bottom Cap
-
-    ---@type AnimatedFrame
-    local bottom = CreateFrame('Frame', nil, arch)
-    bottom:SetWidth(nonExpandedWidth)
-    bottom:SetHeight(nonExpandedCapHeight)
-    bottom:SetPoint('BOTTOM')
-
-    local bottomAnimIn = CreateCapAnimationIn(bottom, function()
-        core.data.widget.BottomCap:SetHeight(expandedCapHeight)
-    end)
-    bottom.animationIn = bottomAnimIn
-
-    local bottomAnimOut = CreateCapAnimationOut(bottom)
-    bottom.animationOut = bottomAnimOut
-
-    local bottomTex = bottom:CreateTexture(nil, 'ARTWORK')
-    bottomTex:SetAllPoints(bottom)
-    bottomTex:SetTexture(utils:GetMediaDir() .. 'Art\\bg_bottom_sm')
-    bottomTex:SetVertexColor(0, 0, 0, 0.65)
-
-    arch.BottomCap = bottom
-
-    --#endregion
-
-    --#region Content
+    contentContainer.BottomCap = bottomContentCap
 
     ---@type CoreContent
-    local base = CreateFrame('Frame', nil, arch)
-    base:SetWidth(nonExpandedWidth)
-    base:SetPoint('TOP', top, 'BOTTOM')
-    base:SetPoint('BOTTOM', bottom, 'TOP')
+    local base = CreateFrame('Frame', nil, contentContainer)
+    base:SetPoint('TOPLEFT', CORE_BASE_PADDING, -(CORE_BASE_PADDING * 2))
+    base:SetPoint('BOTTOMRIGHT', -CORE_BASE_PADDING, CORE_BASE_PADDING * 2)
 
-    local backgroundTex = base:CreateTexture(nil, 'ARTWORK')
-    backgroundTex:SetAllPoints(base)
-    backgroundTex:SetColorTexture(0, 0, 0, 0.65)
-
-    base.animationIn = CreateCapAnimationIn(base)
-    base.animationOut = CreateCapAnimationOut(base)
+    local backgroundTex = contentContainer:CreateTexture(nil, 'ARTWORK')
+    backgroundTex:SetPoint('TOPLEFT', 0, -16)
+    backgroundTex:SetPoint('BOTTOMRIGHT', 0, 16)
+    backgroundTex:SetColorTexture(0, 0, 0, 0.75)
 
     base.children = {}
 
-    arch.Base = base
-    arch.Base.height = 0
+    contentContainer.Base = base
+    contentContainer.Base.height = 0
 
-    --#endregion
 
-    -- arch:Hide() -- TODO: Toggleable
+    contentContainer:Hide()
 
-    arch.height = arch:GetHeight()
-    self.data.widget = arch
+    contentContainer.Base.height = base:GetHeight()
+    self.data.widget = contentContainer
+
+    return self.data
 end
 
 function core:Dissolve()
-    if not core.data.isMaximized then return end
-    self.data.widget.TopCap.animationOut:Play()
-    self.data.widget.BottomCap.animationOut:Play()
-    self.data.widget.Base.animationOut:Play()
-    core.data.isMaximized = false
+    if not self.data.isMaximized then return end
+
+    events:SendMessage('DYNAMIC_ARCHIPELAGO_CORE_END')
+
+    self.data.widget:ShrinkAnimation()
+    animations:FadeOut(self.data.widget, 0.03)
+    self.data.isMaximized = false
 end
 
 function core:Precipitate()
-    if core.data.isMaximized then return end
+    if self.data.isMaximized then return end
 
-    local width = database:GetWidgetWidth()
-    core.data.widget:SetWidth(width)
-    core.data.widget.TopCap:SetWidth(width)
-    core.data.widget.BottomCap:SetWidth(width)
-    core.data.widget.Base:SetWidth(width)
-    core.data.widget:SetAlpha(1.0)
+    events:SendMessage('DYNAMIC_ARCHIPELAGO_CORE_START')
 
-    core.data.widget.height = expandedCapHeight * 2
-    core.data.widget:SetHeight(core.data.widget.height)
+    self.data.widget:SetWidth(ISLAND_SMALL_WIDTH)
+    self.data.widget.height = expandedCapHeight * 2
+    self.data.widget:SetHeight(self.data.widget.height)
 
-    self.data.widget.TopCap.animationIn:Play()
-    self.data.widget.BottomCap.animationIn:Play()
-    self.data.widget.Base.animationIn:Play()
-    core.data.isMaximized = true
+    self.data.widget:Show()
+    self.data.widget:SetAlpha(0.0)
+    animations:FadeIn(self.data.widget, 0.1)
+    self.data.widget:GrowAnimation()
+
+    self.data.isMaximized = true
 end
 
 ---@param widget DynamicArchipelagoItem
-function events:DYNAMIC_ARCHIPELAGO_ADD(_, widget)
+function events:DYNAMIC_ARCHIPELAGO_ADD_CORE_ITEM(_, widget)
     core:Precipitate()
     core.data:AddChild(widget)
 end

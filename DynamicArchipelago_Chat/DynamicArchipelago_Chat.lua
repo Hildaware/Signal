@@ -262,7 +262,7 @@ function chatFrame:OnEvent(chatType, ...)
         message = message,
     }
 
-    events:SendMessage('DYNAMIC_ARCHIPELAGO_ADD', widget)
+    events:SendMessage('DYNAMIC_ARCHIPELAGO_ADD_CORE_ITEM', widget)
 end
 
 chatFrame:Enable()

@@ -5,6 +5,7 @@
     <Include file = 'Components/Templates/IslandLarge.lua' />
     <Include file = 'IslandWidgets/Experience.lua' />
     <Include file = 'IslandWidgets/Location.lua' />
+    <Include file = 'Components/Core.lua' />
     <Include file = 'Components/Island.lua' />
-    <Include file = 'Core.lua' />
+    <Include file = 'Archipelago.lua' />
 </UI>
