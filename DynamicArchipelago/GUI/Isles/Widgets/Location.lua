@@ -36,10 +36,10 @@ function location:Create()
     smallIcon:SetPoint('LEFT', ISLAND_BASE_PADDING, 0)
     smallIcon:SetSize(smallIconSize, smallIconSize)
 
-    local positionXY = smallContent:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlight')
-    positionXY:SetJustifyH('RIGHT')
-    positionXY:SetPoint('TOPLEFT', smallIconSize, 0)
-    positionXY:SetPoint('BOTTOMRIGHT', -(ISLAND_BASE_PADDING * 2), 2)
+    local locationText = smallContent:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlightLarge')
+    locationText:SetJustifyH('CENTER')
+    locationText:SetPoint('LEFT', smallIcon, 'RIGHT', ISLAND_BASE_PADDING, 1)
+    locationText:SetPoint('RIGHT', -ISLAND_BASE_PADDING, 1)
 
     smallIslandWidget:SetChild(smallContent)
 
@@ -53,9 +53,9 @@ function location:Create()
             if position == nil then return nil end
 
             local x, y = position:GetXY()
-            local positionStr = '(' .. string.format("%.2f", x * 100) .. ', ' .. string.format("%.2f", y * 100) .. ')'
+            local positionStr = '(' .. string.format("%.1f", x * 100) .. ', ' .. string.format("%.1f", y * 100) .. ')'
 
-            positionXY:SetText(positionStr)
+            locationText:SetText(positionStr)
 
             eventFrame.lastUpdated = 0
         end
@@ -79,10 +79,15 @@ function location:Create()
     largeIcon:SetPoint('LEFT', largeIconPadding, 0)
     largeIcon:SetSize(largeIconSize, largeIconSize)
 
+    local largeLocation = largeContent:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlightLarge')
+    largeLocation:SetJustifyH('CENTER')
+    largeLocation:SetPoint('TOPLEFT', largeIcon, 'TOPRIGHT', largeIconPadding, 0)
+    largeLocation:SetPoint('BOTTOMRIGHT', -largeIconPadding * 2, smallIslandWidget.widget:GetHeight())
+
     local largePosition = largeContent:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlightLarge')
     largePosition:SetJustifyH('CENTER')
-    largePosition:SetPoint('TOPLEFT', largeIconSize + largeIconPadding, 0)
-    largePosition:SetPoint('BOTTOMRIGHT', -largeIconPadding, 2)
+    largePosition:SetPoint('TOPLEFT', largeLocation, 'BOTTOMLEFT')
+    largePosition:SetPoint('RIGHT', -largeIconPadding * 2, 0)
 
     largeIsland:SetChild(largeContent)
 
@@ -99,7 +104,8 @@ function location:Create()
             local x, y = position:GetXY()
             local positionStr = '(' .. string.format("%.2f", x * 100) .. ', ' .. string.format("%.2f", y * 100) .. ')'
 
-            largePosition:SetText(mapInfo.name .. " " .. positionStr)
+            largeLocation:SetText(mapInfo.name)
+            largePosition:SetText(positionStr)
 
             eventFrame.lastUpdated = 0
         end
