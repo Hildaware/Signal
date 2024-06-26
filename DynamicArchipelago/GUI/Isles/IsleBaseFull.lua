@@ -1,16 +1,16 @@
 local addonName = ...
 local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 
----@class IslandLarge: AceModule
-local large = addon:NewModule('IslandLarge')
+---@class IsleBaseFull: AceModule
+local full = addon:NewModule('IsleBaseFull')
 
 ---@class (exact) BaseLargeIsland : DynamicArchipelagoItem
 ---@field widget Frame
 ---@field child BaseIsland?
 ---@field SetChild function
-large.baseProto = {}
+full.baseProto = {}
 
-function large.baseProto:Connect()
+function full.baseProto:Connect()
     if self.child == nil or self.child.eventFrame == nil then return end
     self.child.eventFrame:OnEnable()
     self.child.eventFrame:Show()
@@ -18,7 +18,7 @@ function large.baseProto:Connect()
     -- Enable the Events func? if it has one
 end
 
-function large.baseProto:Disconnect()
+function full.baseProto:Disconnect()
     -- Disable the event frame
     if self.child == nil or self.child.eventFrame == nil then return end
     self.child.eventFrame:OnDisable()
@@ -26,45 +26,45 @@ function large.baseProto:Disconnect()
 end
 
 ---@param widget DynamicArchipelagoItem|Frame
-function large.baseProto:SetChild(widget)
+function full.baseProto:SetChild(widget)
     self.child = widget
 end
 
-function large.baseProto:Release()
-    large._pool:Release(self)
+function full.baseProto:Release()
+    full._pool:Release(self)
 end
 
-function large.baseProto:CleanBaseData()
+function full.baseProto:CleanBaseData()
     if self.child == nil then return end
 
     self.child:Wipe()
     self.child = nil
 end
 
-function large.baseProto:Wipe()
+function full.baseProto:Wipe()
     self.widget:Hide()
     self.widget:SetParent(nil)
     self.widget:ClearAllPoints()
     self:CleanBaseData()
 end
 
-function large:OnInitialize()
+function full:OnInitialize()
     self._pool = CreateObjectPool(self._DoCreate, self._DoReset)
     if self._pool.SetResetDisallowedIfNew then
         self._pool:SetResetDisallowedIfNew()
     end
 
-    _G['DynamicArchipelago'].IslandLarge = self
+    -- _G['DynamicArchipelago'].IslandLarge = self
 end
 
 ---@param item BaseLargeIsland
-function large:_DoReset(item)
+function full:_DoReset(item)
     item:CleanBaseData()
 end
 
 ---@return BaseLargeIsland
-function large:_DoCreate()
-    local i = setmetatable({}, { __index = large.baseProto })
+function full:_DoCreate()
+    local i = setmetatable({}, { __index = full.baseProto })
     i.child = nil
 
     local frame = CreateFrame('Frame', nil, UIParent)
@@ -78,10 +78,10 @@ function large:_DoCreate()
 end
 
 ---@return BaseLargeIsland
-function large:Create()
+function full:Create()
     local i = self._pool:Acquire()
 
     return i
 end
 
-large:Enable()
+full:Enable()

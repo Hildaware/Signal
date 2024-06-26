@@ -2,8 +2,8 @@
 local addonName = ...
 local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 
----@class Core: AceModule
-local core = addon:NewModule('Core')
+---@class Peninsula: AceModule
+local core = addon:NewModule('Peninsula')
 
 ---@class Database: AceModule
 local database = addon:GetModule('Database')
@@ -23,8 +23,8 @@ local animations = addon:GetModule('Animations')
 
 ---@class ArchipelagoWidget : Frame
 ---@field Base CoreContent
----@field TopCap BaseFrame
----@field BottomCap BaseFrame
+---@field TopCap PeninsulaBase
+---@field BottomCap PeninsulaBase
 ---@field height number
 ---@field GrowAnimation function
 ---@field ShrinkAnimation function
@@ -252,7 +252,7 @@ function core:Create()
     contentContainer.ShrinkAnimation = core.widget.ShrinkAnimation
     self.data.widget = contentContainer
 
-    ---@type BaseFrame
+    ---@type PeninsulaBase
     local topContentCap = CreateFrame('Frame', nil, contentContainer)
     topContentCap:SetPoint('TOPLEFT', contentContainer, 'TOPLEFT')
     topContentCap:SetPoint('BOTTOMRIGHT', contentContainer, 'TOPRIGHT', 0, -16)
@@ -269,7 +269,7 @@ function core:Create()
 
     contentContainer.TopCap = topContentCap
 
-    ---@type BaseFrame
+    ---@type PeninsulaBase
     local bottomContentCap = CreateFrame('Frame', nil, contentContainer)
     bottomContentCap:SetPoint('TOPLEFT', contentContainer, 'BOTTOMLEFT', 0, 16)
     bottomContentCap:SetPoint('BOTTOMRIGHT')

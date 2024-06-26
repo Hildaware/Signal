@@ -1,11 +1,7 @@
 <UI xmlns='http://www.blizzard.com/wow/ui/'   xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'   xsi:schemaLocation='http://www.blizzard.com/wow/ui/'>
     <Include file = 'Components/CircularProgress.lua' />
-    <Include file = 'Components/Templates/Base.lua' />
-    <Include file = 'Components/Templates/IslandSmall.lua' />
-    <Include file = 'Components/Templates/IslandLarge.lua' />
-    <Include file = 'IslandWidgets/Experience.lua' />
-    <Include file = 'IslandWidgets/Location.lua' />
-    <Include file = 'Components/Core.lua' />
-    <Include file = 'Components/Island.lua' />
+    <Include file = 'Components/PeninsulaBase.lua' />
+    <Include file = 'Isle.lua' />
+    <Include file = 'Peninsula.lua' />
     <Include file = 'Archipelago.lua' />
 </UI>

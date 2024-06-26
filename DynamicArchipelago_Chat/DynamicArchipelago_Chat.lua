@@ -15,6 +15,9 @@ local events = addon:GetModule('Events')
 ---@class Database: AceModule
 local database = addon:GetModule('Database')
 
+---@class PeninsulaBase: AceModule
+local baseFrame = addon:GetModule('PeninsulaBase')
+
 CHAT_TYPE = {
     WHISPER = 1,
     PARTY = 2,
@@ -161,7 +164,6 @@ end
 function chatFrame:_DoCreate()
     local i = setmetatable({}, { __index = chatFrame.chatProto })
 
-    local baseFrame = _G['DynamicArchipelago'].BaseFrame
     local baseWidth = baseFrame.baseProto:GetWidgetWidth()
     local iconWidth = baseFrame.baseProto:GetIconWidth()
 
@@ -227,7 +229,7 @@ function chatFrame:OnEvent(chatType, ...)
     if engClass == nil or engClass == '' then return end
 
     local viewTime = database:GetVisibilityTimeByType(Type)
-    local widget = _G['DynamicArchipelago'].BaseFrame:Create(viewTime)
+    local widget = baseFrame:Create(viewTime)
     widget:SetType(Type)
 
     local formattedName = '|c' .. utils:GetClassColor(engClass) .. name .. '|r'

@@ -2,8 +2,8 @@
 local addonName = ...
 local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 
----@class Island: AceModule
-local island = addon:NewModule('Island')
+---@class Isle: AceModule
+local island = addon:NewModule('Isle')
 
 ---@class Database: AceModule
 local database = addon:GetModule('Database')

@@ -14,11 +14,11 @@ local utils = addon:GetModule('Utils')
 ---@class Events: AceModule
 local events = addon:GetModule('Events')
 
----@class Core: AceModule
-local core = addon:GetModule('Core')
+---@class Peninsula: AceModule
+local core = addon:GetModule('Peninsula')
 
----@class Island: AceModule
-local island = addon:GetModule('Island')
+---@class Isle: AceModule
+local island = addon:GetModule('Isle')
 
 ISLAND_NAME = {
     SMALL = 'Small',

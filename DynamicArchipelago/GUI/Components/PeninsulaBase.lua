@@ -1,8 +1,8 @@
 local addonName = ...
 local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 
----@class BaseFrame: AceModule
-local baseFrame = addon:NewModule('BaseFrame')
+---@class PeninsulaBase: AceModule
+local penBase = addon:NewModule('PeninsulaBase')
 
 ---@class Utils: AceModule
 local utils = addon:GetModule('Utils')
@@ -35,7 +35,7 @@ local database = addon:GetModule('Database')
 ---@field height number
 ---@field GetIconWidth function
 ---@field GetWidgetWidth function
-baseFrame.baseProto = {}
+penBase.baseProto = {}
 
 --#endregion
 
@@ -44,32 +44,32 @@ local padding = 8
 --#region Base Item Methods
 
 ---@return number
-function baseFrame.baseProto:GetWidgetWidth()
+function penBase.baseProto:GetWidgetWidth()
     return database:GetWidgetWidth()
 end
 
 ---@return number
-function baseFrame.baseProto:GetIconWidth()
+function penBase.baseProto:GetIconWidth()
     return database:GetWidgetWidth() / 4
 end
 
 ---@return number
-function baseFrame.baseProto:GetHeaderHeight()
+function penBase.baseProto:GetHeaderHeight()
     return self.frame.header:GetHeight()
 end
 
 ---@param str string
-function baseFrame.baseProto:SetHeader(str)
+function penBase.baseProto:SetHeader(str)
     self.frame.header:SetText(str)
 end
 
 ---@param str string
-function baseFrame.baseProto:SetType(str)
+function penBase.baseProto:SetType(str)
     self.frame.header:SetText(str .. ' - Just Now')
 end
 
 ---@param content Frame
-function baseFrame.baseProto:SetContent(content)
+function penBase.baseProto:SetContent(content)
     content:SetParent(self.frame.content)
     content:ClearAllPoints()
     content:SetPoint('TOPLEFT', self.frame.header, 'BOTTOMLEFT')
@@ -77,12 +77,12 @@ function baseFrame.baseProto:SetContent(content)
 end
 
 ---@param widget DynamicArchipelagoItem
-function baseFrame.baseProto:SetChild(widget)
+function penBase.baseProto:SetChild(widget)
     self.child = widget
 end
 
 ---@param icon Frame
-function baseFrame.baseProto:SetIcon(icon)
+function penBase.baseProto:SetIcon(icon)
     icon:SetParent(self.frame.icon)
     icon:ClearAllPoints()
     icon:SetPoint('TOPLEFT')
@@ -90,7 +90,7 @@ function baseFrame.baseProto:SetIcon(icon)
 end
 
 ---@param visibilityTime number
-function baseFrame.baseProto:SetProgressBar(visibilityTime)
+function penBase.baseProto:SetProgressBar(visibilityTime)
     local duration = visibilityTime
     local progressBar = self.frame.progress
     ---@diagnostic disable-next-line: undefined-field
@@ -102,18 +102,18 @@ function baseFrame.baseProto:SetProgressBar(visibilityTime)
     end)
 end
 
-function baseFrame.baseProto:Release()
-    baseFrame._pool:Release(self)
+function penBase.baseProto:Release()
+    penBase._pool:Release(self)
 end
 
-function baseFrame.baseProto:Wipe()
+function penBase.baseProto:Wipe()
     self.frame:Hide()
     self.frame:SetParent(nil)
     self.frame:ClearAllPoints()
     self:CleanBaseData()
 end
 
-function baseFrame.baseProto:CleanBaseData()
+function penBase.baseProto:CleanBaseData()
     if self.child == nil then return end
 
     self.child:Wipe()
@@ -122,23 +122,23 @@ end
 
 --#endregion
 
-function baseFrame:OnInitialize()
+function penBase:OnInitialize()
     self._pool = CreateObjectPool(self._DoCreate, self._DoReset)
     if self._pool.SetResetDisallowedIfNew then
         self._pool:SetResetDisallowedIfNew()
     end
 
-    _G['DynamicArchipelago'].BaseFrame = self
+    -- _G['DynamicArchipelago'].BaseFrame = self
 end
 
 ---@param item BaseArchipelagoItem
-function baseFrame:_DoReset(item)
+function penBase:_DoReset(item)
     item:CleanBaseData()
 end
 
 ---@return BaseArchipelagoItem
-function baseFrame:_DoCreate()
-    local i = setmetatable({}, { __index = baseFrame.baseProto })
+function penBase:_DoCreate()
+    local i = setmetatable({}, { __index = penBase.baseProto })
     i.id = utils:GenerateId()
     i.child = nil
 
@@ -220,7 +220,7 @@ end
 
 ---@param visibilityTime number
 ---@return BaseArchipelagoItem
-function baseFrame:Create(visibilityTime)
+function penBase:Create(visibilityTime)
     ---@type BaseArchipelagoItem
     local i = self._pool:Acquire()
     C_Timer.NewTimer(visibilityTime, function()
@@ -232,4 +232,4 @@ function baseFrame:Create(visibilityTime)
     return i
 end
 
-baseFrame:Enable()
+penBase:Enable()

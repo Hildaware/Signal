@@ -1,8 +1,8 @@
 local addonName = ...
 local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 
----@class IslandSmall: AceModule
-local small = addon:NewModule('IslandSmall')
+---@class IsleBaseSmall: AceModule
+local small = addon:NewModule('IsleBaseSmall')
 
 ---@class (exact) BaseSmallIsland : DynamicArchipelagoItem
 ---@field widget Frame
@@ -54,7 +54,7 @@ function small:OnInitialize()
         self._pool:SetResetDisallowedIfNew()
     end
 
-    _G['DynamicArchipelago'].IslandSmall = self
+    -- _G['DynamicArchipelago'].IslandSmall = self
 end
 
 ---@param item BaseSmallIsland

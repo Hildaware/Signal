@@ -11,21 +11,24 @@ local events = addon:GetModule('Events')
 ---@class FrameHelpers: AceModule
 local helper = addon:GetModule('FrameHelpers')
 
+---@class IsleBaseSmall: AceModule
+local smallIsland = addon:GetModule('IsleBaseSmall')
+
+---@class IsleBaseFull: AceModule
+local fullIsland = addon:GetModule('IsleBaseFull')
+
 ---@return IslandContent?
 function location:Create()
     ---@type IslandContent
     local islandData = { Small = nil, Full = nil, widget = nil }
 
-    ---@class ArchipelagoWidget: AceModule
-    local island = addon:GetModule('Island')
-
-    local smallIsland = _G['DynamicArchipelago'].IslandSmall:Create()
+    local smallIslandWidget = smallIsland:Create()
 
     ---@type BaseIsland
-    local smallContent = CreateFrame('Frame', nil, smallIsland.widget)
-    smallContent:SetAllPoints(smallIsland.widget)
+    local smallContent = CreateFrame('Frame', nil, smallIslandWidget.widget)
+    smallContent:SetAllPoints(smallIslandWidget.widget)
 
-    local smallIconSize = smallIsland.widget:GetHeight() - (ISLAND_BASE_PADDING * 2)
+    local smallIconSize = smallIslandWidget.widget:GetHeight() - (ISLAND_BASE_PADDING * 2)
 
     local smallIcon = helper:CreateIconFrame(237386)
     smallIcon:SetParent(smallContent)
@@ -38,7 +41,7 @@ function location:Create()
     positionXY:SetPoint('TOPLEFT', smallIconSize, 0)
     positionXY:SetPoint('BOTTOMRIGHT', -(ISLAND_BASE_PADDING * 2), 2)
 
-    smallIsland:SetChild(smallContent)
+    smallIslandWidget:SetChild(smallContent)
 
     local smallOnEnable = function(eventFrame, elapsed)
         eventFrame.lastUpdated = eventFrame.lastUpdated + elapsed
@@ -60,7 +63,7 @@ function location:Create()
 
     helper:CreateIslandEventFrame(smallContent, 'OnUpdate', smallOnEnable)
 
-    local largeIsland = _G['DynamicArchipelago'].IslandLarge:Create()
+    local largeIsland = fullIsland:Create()
 
     ---@type BaseIsland
     local largeContent = CreateFrame('Frame', nil, largeIsland.widget)
@@ -104,7 +107,7 @@ function location:Create()
 
     helper:CreateIslandEventFrame(largeContent, 'OnUpdate', largeOnEnable)
 
-    islandData.Small = smallIsland
+    islandData.Small = smallIslandWidget
     islandData.Full = largeIsland
 
     local onClick = function()
