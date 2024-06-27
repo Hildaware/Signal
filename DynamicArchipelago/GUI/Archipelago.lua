@@ -64,10 +64,6 @@ function arch:Create()
 
     self.data.island = coreIsland
 
-    ---@type LocationWidget
-    local location = addon:GetModule('LocationWidget')
-    coreIsland:SetDataContent(location:Create())
-
     local coreContent = core:Create()
     coreContent.widget:ClearAllPoints()
     coreContent.widget:SetParent(frame)

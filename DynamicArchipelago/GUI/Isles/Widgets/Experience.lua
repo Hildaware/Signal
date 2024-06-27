@@ -17,21 +17,22 @@ local utils = addon:GetModule('Utils')
 ---@class FrameHelpers: AceModule
 local helper = addon:GetModule('FrameHelpers')
 
+---@class IsleBase: AceModule
+local isleBase = addon:GetModule('IsleBase')
+
 ---@return IslandContent?
 function exp:Create()
     ---@type IslandContent
     local islandData = { Small = nil, Full = nil, widget = nil }
 
-    ---@class ArchipelagoWidget: AceModule
-    local island = addon:GetModule('Island')
-
-    local smallIsland = _G['DynamicArchipelago'].IslandSmall:Create()
-
     ---@type BaseIsland
-    local smallContent = CreateFrame('Frame', nil, smallIsland.widget)
-    smallContent:SetAllPoints(smallIsland.widget)
+    local smallIslandWidget = isleBase:Create(ISLAND_TYPE.SMALL)
+    if smallIslandWidget == nil then return end
 
-    local smallIconSize = smallIsland.widget:GetHeight() - (ISLAND_BASE_PADDING * 2)
+    local smallContent = CreateFrame('Frame', nil, smallIslandWidget.widget)
+    smallContent:SetAllPoints(smallIslandWidget.widget)
+
+    local smallIconSize = smallIslandWidget.widget:GetHeight() - (ISLAND_BASE_PADDING * 2)
 
     local smallProgress = helper:CreateCircularProgressFrame()
     smallProgress.widget:SetParent(smallContent)
@@ -44,32 +45,43 @@ function exp:Create()
     text:SetPoint('TOPLEFT', smallIconSize, 0)
     text:SetPoint('BOTTOMRIGHT', -(ISLAND_BASE_PADDING * 2), 2)
 
-    smallIsland:SetChild(smallContent)
+    -- Populate on initialize
+    local currentLevel = resolver:GetCurrentLevel()
+    local currentXP = resolver:GetCurrentXP()
+    local requiredXP = resolver:GetRequiredXP()
+
+    local currentPercent = utils:Round(currentXP / requiredXP, 4)
+    local levelStr = 'Level ' .. currentLevel .. ' (' .. format('%.1f%%', currentPercent * 100) .. ')'
+
+    text:SetText(levelStr)
+    smallProgress.value = currentPercent
+    smallProgress:SetValue(smallProgress.value)
+
+    smallIslandWidget:SetChild(smallContent)
 
     local smallOnEnable = function(eventFrame, eventName, args)
-        if eventName ~= 'PLAYER_XP_UPDATE' and eventName ~= 'PLAYER_ENTERING_WORLD' then return end
+        print('smallOnEnable', eventName)
+        if eventName ~= 'PLAYER_XP_UPDATE' and eventName ~= 'PLAYER_REGEN_ENABLED' then return end
 
-        local currentLevel = resolver:GetCurrentLevel()
-        local currentXP = resolver:GetCurrentXP()
-        local requiredXP = resolver:GetRequiredXP()
+        local curLvl = resolver:GetCurrentLevel()
+        local curXP = resolver:GetCurrentXP()
+        local reqXP = resolver:GetRequiredXP()
 
-        local remainingXP = requiredXP - currentXP
-        local currentPercent = utils:Round(currentXP / requiredXP, 4)
-        local remainingPercent = utils:Round(remainingXP / requiredXP, 4)
+        local curPerc = utils:Round(curXP / reqXP, 4)
 
-        local levelStr = 'Level ' .. currentLevel .. ' ' .. format('%.1f%%', currentPercent * 100)
-        text:SetText(levelStr)
-        smallProgress.value = 0.38
+        local lvlStr = 'Level ' .. curLvl .. ' (' .. format('%.1f%%', curPerc * 100) .. ')'
+        text:SetText(lvlStr)
+        smallProgress.value = curPerc
         smallProgress:SetValue(smallProgress.value)
     end
 
-    helper:CreateIslandEventFrame(smallContent, 'OnEvent', smallOnEnable)
-    smallContent.eventFrame:RegisterEvent('PLAYER_XP_UPDATE') -- TODO: Unregister Event
-    smallContent.eventFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
-
-    local largeIsland = _G['DynamicArchipelago'].IslandLarge:Create()
+    smallIslandWidget:RegisterEventFrame('OnEvent', smallOnEnable)
+    smallIslandWidget:RegisterEvents({ 'PLAYER_REGEN_ENABLED', 'PLAYER_XP_UPDATE' })
 
     ---@type BaseIsland
+    local largeIsland = isleBase:Create(ISLAND_TYPE.FULL)
+    if largeIsland == nil then return end
+
     local largeContent = CreateFrame('Frame', nil, largeIsland.widget)
     largeContent:SetAllPoints(largeIsland.widget)
 
@@ -103,26 +115,42 @@ function exp:Create()
     largeIsland:SetChild(largeContent)
 
     local largeOnEnable = function(eventFrame, args)
-        local currentLevel = resolver:GetCurrentLevel()
-        local currentXP = resolver:GetCurrentXP()
-        local requiredXP = resolver:GetRequiredXP()
+        local curLvl = resolver:GetCurrentLevel()
+        local curXP = resolver:GetCurrentXP()
+        local reqXP = resolver:GetRequiredXP()
 
-        local remainingXP = requiredXP - currentXP
-        local currentPercent = utils:Round(currentXP / requiredXP, 4)
-        local remainingPercent = utils:Round(remainingXP / requiredXP, 4)
+        local curPerc = utils:Round(curXP / reqXP, 4)
 
-        local levelStr = format('%.1f%%', currentPercent * 100) ..
-            ' (' .. format('%.1f%%', remainingPercent * 100) .. ' remaining)'
-        local level = 'Level ' .. currentLevel .. ' ' .. currentXP .. ' / ' .. requiredXP
+        local turnInXP = 0
+        local completedQuests = 0
+        local questEntries = C_QuestLog.GetNumQuestLogEntries()
+        for i = 1, questEntries, 1 do
+            local questId = C_QuestLog.GetQuestIDForLogIndex(i)
+            if questId ~= nil and questId > 0 then
+                local rewardXP = GetQuestLogRewardXP(questId)
+
+                if rewardXP > 0 then
+                    if C_QuestLog.IsComplete(questId) or C_QuestLog.ReadyForTurnIn(questId) then
+                        completedQuests = completedQuests + 1
+                        turnInXP = turnInXP + rewardXP
+                    end
+                end
+            end
+        end
+
+        local questsCompletedPercent = utils:Round(turnInXP / reqXP, 4)
+
+        local lvlStr = completedQuests .. ' Quests Completed' ..
+            ' (' .. format('%.1f%%', questsCompletedPercent * 100) .. ')'
+        local level = 'Level ' .. curLvl .. ' (' .. format('%.1f%%', curPerc * 100) .. ')'
         largeTextTop:SetText(level)
-        largeTextBottom:SetText(levelStr)
-        bar:SetValue(currentPercent)
+        largeTextBottom:SetText(lvlStr)
+        bar:SetValue(curPerc)
     end
 
-    helper:CreateIslandEventFrame(largeContent, 'OnShow', largeOnEnable)
-    largeContent.eventFrame:Hide()
+    largeIsland:RegisterEventFrame('OnShow', largeOnEnable)
 
-    islandData.Small = smallIsland
+    islandData.Small = smallIslandWidget
     islandData.Full = largeIsland
 
     return islandData

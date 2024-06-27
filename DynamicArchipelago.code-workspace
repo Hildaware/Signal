@@ -54,7 +54,9 @@
 			"UIDropDownMenu_GetSelectedValue",
 			"UIDropDownMenu_SetButtonWidth",
 			"UIDropDownMenu_SetWidth",
-			"UIDropDownMenu_GetSelectedID"
+			"UIDropDownMenu_GetSelectedID",
+			"PLAYER",
+			"PLAYER_LEVEL"
 		]
 	}
 }

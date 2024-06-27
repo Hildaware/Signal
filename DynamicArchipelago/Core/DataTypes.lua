@@ -25,25 +25,19 @@ local types = addon:NewModule('Types')
 
 ---@class (exact) IslandContent
 ---@field widget Frame
----@field Small BaseSmallIsland
----@field Full BaseLargeIsland
+---@field Small BaseIsland
+---@field Full BaseIsland
 ---@field OnClick function?
-
---- Large / Small Islands must implement this
----@class BaseIsland : DynamicArchipelagoItem
----@field eventFrame IslandEventFrame?
----@field Connect function
----@field Disconnect function
-
----@class (exact) IslandEventFrame : Frame
----@field lastUpdated number
----@field OnEnable function
----@field OnDisable function
 
 ---@class IslandFrame : AnimatedFrame
 ---@field Content IslandContent
 
 --#endregion
 
+---@meta
+
+---@return number
+---@param questId number
+function GetQuestLogRewardXP(questId) end
 
 types:Enable()

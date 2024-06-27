@@ -20,43 +20,6 @@ function helpers:OnInitialize()
     self.data.masqueGroup = Masque:Group('Dynamic Archipelago')
 end
 
---- Builds the Event Frame for a Base Island.
----@param parent BaseIsland
----@param scriptType ScriptFrame
----@param enableFunc function
----@param disableFunc function?
----@return IslandEventFrame
-function helpers:CreateIslandEventFrame(parent, scriptType, enableFunc, disableFunc)
-    ---@type IslandEventFrame
-    local eventFrame = CreateFrame('Frame', nil, parent)
-    eventFrame.lastUpdated = 0
-
-    eventFrame.OnEnable = function()
-        if scriptType == 'OnUpdate' then
-            eventFrame:SetScript(scriptType, function(eFrame, eventName, args)
-                enableFunc(eFrame, eventName, args)
-            end)
-        else
-            eventFrame:SetScript(scriptType, function(eFrame, arg)
-                enableFunc(eFrame, arg)
-            end)
-        end
-    end
-
-    eventFrame.OnDisable = function()
-        if disableFunc ~= nil then
-            eventFrame:SetScript(scriptType, function(eFrame, arg)
-                disableFunc()
-            end)
-        else
-            eventFrame:SetScript(scriptType, nil)
-        end
-    end
-
-    parent.eventFrame = eventFrame
-    return eventFrame
-end
-
 ---@param iconId number
 ---@return Frame
 function helpers:CreateIconFrame(iconId)

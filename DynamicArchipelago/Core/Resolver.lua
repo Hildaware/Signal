@@ -13,6 +13,25 @@ function resolver:GetCurrentLevel()
 end
 
 ---@return number
+function resolver:GetMaxLevel()
+    MAX_PLAYER_LEVEL_TABLE = {
+        [0] = 60,
+        [1] = 60,
+        [2] = 60,
+        [3] = 60,
+        [4] = 60,
+        [5] = 60,
+        [6] = 60,
+        [7] = 60,
+        [8] = 60,
+        [9] = 70,
+        [10] = 80
+    }
+
+    return MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]
+end
+
+---@return number
 function resolver:GetCurrentXP()
     return UnitXP('player')
 end
@@ -25,6 +44,11 @@ end
 ---@return number?
 function resolver:GetRestedXP()
     return GetXPExhaustion()
+end
+
+---@return boolean
+function resolver:InInstance()
+    return IsInInstance()
 end
 
 resolver:Enable()

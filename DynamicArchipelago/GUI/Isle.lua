@@ -14,6 +14,9 @@ local utils = addon:GetModule('Utils')
 ---@class Animations: AceModule
 local animations = addon:GetModule('Animations')
 
+---@class Events: AceModule
+local events = addon:GetModule('Events')
+
 ---@class (exact) IslandLife
 ---@field widget IslandFrame
 ---@field SetDataContent function
@@ -30,7 +33,7 @@ function island.proto:EnableIsland(islandType)
     local content = self.widget.Content
     local widgetSize = ISLAND_SMALL_WIDTH
 
-    ---@type BaseLargeIsland|BaseSmallIsland
+    ---@type BaseIsland
     local enableFrame = nil
 
     if islandType == ISLAND_TYPE.SMALL then
@@ -172,6 +175,10 @@ function island:Create()
     main:SetHeight(ISLAND_BASE_WIDTH / 4)
     main:SetPoint('CENTER')
 
+    ---@type IsleControllerFrame
+    local controller = addon:GetModule('IsleControllerFrame')
+    controller.data.eventFrame:SetParent(main)
+
     -- Custom Animations
     main:SetScript('OnEnter', function()
         self.data.widget.Content.Small.widget:Hide()
@@ -210,6 +217,13 @@ function island:Create()
     self.data.widget = main
 
     return self.data
+end
+
+---@param widget ArchipelagoWidget
+function events:DYNAMIC_ARCHIPELAGO_SET_ISLE_WIDGET(_, widget)
+    if island.data == nil then return end
+    local newWidget = widget:Create()
+    island.data:SetDataContent(newWidget)
 end
 
 island:Enable()

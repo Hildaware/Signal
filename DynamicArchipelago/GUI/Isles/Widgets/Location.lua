@@ -11,20 +11,17 @@ local events = addon:GetModule('Events')
 ---@class FrameHelpers: AceModule
 local helper = addon:GetModule('FrameHelpers')
 
----@class IsleBaseSmall: AceModule
-local smallIsland = addon:GetModule('IsleBaseSmall')
-
----@class IsleBaseFull: AceModule
-local fullIsland = addon:GetModule('IsleBaseFull')
+---@class IsleBase: AceModule
+local isleBase = addon:GetModule('IsleBase')
 
 ---@return IslandContent?
 function location:Create()
     ---@type IslandContent
     local islandData = { Small = nil, Full = nil, widget = nil }
 
-    local smallIslandWidget = smallIsland:Create()
+    local smallIslandWidget = isleBase:Create(ISLAND_TYPE.SMALL)
+    if smallIslandWidget == nil then return end
 
-    ---@type BaseIsland
     local smallContent = CreateFrame('Frame', nil, smallIslandWidget.widget)
     smallContent:SetAllPoints(smallIslandWidget.widget)
 
@@ -61,11 +58,12 @@ function location:Create()
         end
     end
 
-    helper:CreateIslandEventFrame(smallContent, 'OnUpdate', smallOnEnable)
-
-    local largeIsland = fullIsland:Create()
+    smallIslandWidget:RegisterEventFrame('OnUpdate', smallOnEnable)
 
     ---@type BaseIsland
+    local largeIsland = isleBase:Create(ISLAND_TYPE.FULL)
+    if largeIsland == nil then return end
+
     local largeContent = CreateFrame('Frame', nil, largeIsland.widget)
     largeContent:SetAllPoints(largeIsland.widget)
 
@@ -111,7 +109,7 @@ function location:Create()
         end
     end
 
-    helper:CreateIslandEventFrame(largeContent, 'OnUpdate', largeOnEnable)
+    largeIsland:RegisterEventFrame('OnUpdate', largeOnEnable)
 
     islandData.Small = smallIslandWidget
     islandData.Full = largeIsland

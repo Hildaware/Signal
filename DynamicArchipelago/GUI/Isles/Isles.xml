@@ -1,6 +1,6 @@
 <UI xmlns='http://www.blizzard.com/wow/ui/'   xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'   xsi:schemaLocation='http://www.blizzard.com/wow/ui/'>
-    <Include file = 'IsleBaseSmall.lua' />
-    <Include file = 'IsleBaseFull.lua' />
+    <Include file = 'IsleBase.lua' />
     <Include file = 'Widgets/Experience.lua' />
     <Include file = 'Widgets/Location.lua' />
+    <Include file = 'IsleController.lua' />
 </UI>
