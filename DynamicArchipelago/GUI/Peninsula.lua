@@ -64,7 +64,7 @@ end
 function core.widget:ShrinkAnimation()
     C_Timer.NewTicker(0.001,
         function(ticker)
-            local expectedWidth = ISLAND_SMALL_WIDTH
+            local expectedWidth = ISLE_SMALL_WIDTH
 
             if animations:Shrink(self, nil, expectedWidth, nil, 12) then
                 ticker:Cancel()
@@ -326,7 +326,7 @@ function core:Precipitate()
 
     events:SendMessage('DYNAMIC_ARCHIPELAGO_CORE_START')
 
-    self.data.widget:SetWidth(ISLAND_SMALL_WIDTH)
+    self.data.widget:SetWidth(ISLE_SMALL_WIDTH)
     self.data.widget.height = expandedCapHeight * 2
     self.data.widget:SetHeight(self.data.widget.height)
 

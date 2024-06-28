@@ -56,7 +56,11 @@
 			"UIDropDownMenu_SetWidth",
 			"UIDropDownMenu_GetSelectedID",
 			"PLAYER",
-			"PLAYER_LEVEL"
+			"PLAYER_LEVEL",
+			"YELL",
+			"COLORS",
+			"COLOR",
+			"CreateColorFromRGBAHexString"
 		]
 	}
 }

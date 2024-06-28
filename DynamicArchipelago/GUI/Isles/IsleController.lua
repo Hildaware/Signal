@@ -38,6 +38,8 @@ end
 function controller:OnInitialize()
     self.data = setmetatable({}, { __index = controller.proto })
 
+    ---@class Frame
+    ---@field lastUpdated number
     self.data.eventFrame = CreateFrame('Frame', nil, UIParent)
     self.data.eventFrame.lastUpdated = 0
 
@@ -72,6 +74,8 @@ function controller:OnInitialize()
         return a.priority < b.priority
     end)
 
+    ---@param eFrame Frame
+    ---@param elapsed number
     self.data.eventFrame:SetScript('OnUpdate', function(eFrame, elapsed)
         eFrame.lastUpdated = eFrame.lastUpdated + elapsed
         if eFrame.lastUpdated >= 0.25 then
@@ -86,15 +90,5 @@ function controller:OnInitialize()
         end
     end)
 end
-
---[[
-    This fella needs the following:
-    - An EventFrame to constantly check on specific events related to enabled Widgets
-    - The currently enabled Widget
-    - Map of available widgets
-        - Contains their 'priority'
-        - What triggers them
-]]
-
 
 controller:Enable()

@@ -5,17 +5,14 @@ local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 ---@class ExperienceWidget: AceModule
 local exp = addon:NewModule('ExperienceWidget')
 
----@class Events: AceModule
-local events = addon:GetModule('Events')
-
 ---@class Resolver: AceModule
 local resolver = addon:GetModule('Resolver')
 
 ---@class Utils: AceModule
 local utils = addon:GetModule('Utils')
 
----@class FrameHelpers: AceModule
-local helper = addon:GetModule('FrameHelpers')
+---@class Components: AceModule
+local components = addon:GetModule('Components')
 
 ---@class IsleBase: AceModule
 local isleBase = addon:GetModule('IsleBase')
@@ -26,24 +23,27 @@ function exp:Create()
     local islandData = { Small = nil, Full = nil, widget = nil }
 
     ---@type BaseIsland
-    local smallIslandWidget = isleBase:Create(ISLAND_TYPE.SMALL)
+    local smallIslandWidget = isleBase:Create(ISLE_TYPE.SMALL)
     if smallIslandWidget == nil then return end
 
     local smallContent = CreateFrame('Frame', nil, smallIslandWidget.widget)
     smallContent:SetAllPoints(smallIslandWidget.widget)
 
-    local smallIconSize = smallIslandWidget.widget:GetHeight() - (ISLAND_BASE_PADDING * 2)
+    local smallIconSize = smallIslandWidget.widget:GetHeight() - (ISLE_BASE_PADDING * 2)
 
-    local smallProgress = helper:CreateCircularProgressFrame()
+    ---@type CircularProgressComponent?
+    local smallProgress = components:Fetch('CircularProgress')
+    if smallProgress == nil then return end
+
     smallProgress.widget:SetParent(smallContent)
     smallProgress.widget:ClearAllPoints()
-    smallProgress.widget:SetPoint('LEFT', ISLAND_BASE_PADDING, 0)
+    smallProgress.widget:SetPoint('LEFT', ISLE_BASE_PADDING, 0)
     smallProgress.widget:SetSize(smallIconSize, smallIconSize)
 
     local text = smallContent:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlight')
     text:SetJustifyH('RIGHT')
     text:SetPoint('TOPLEFT', smallIconSize, 0)
-    text:SetPoint('BOTTOMRIGHT', -(ISLAND_BASE_PADDING * 2), 2)
+    text:SetPoint('BOTTOMRIGHT', -(ISLE_BASE_PADDING * 2), 2)
 
     -- Populate on initialize
     local currentLevel = resolver:GetCurrentLevel()
@@ -54,6 +54,8 @@ function exp:Create()
     local levelStr = 'Level ' .. currentLevel .. ' (' .. format('%.1f%%', currentPercent * 100) .. ')'
 
     text:SetText(levelStr)
+
+    smallProgress:SetColor(utils:GetMergedColorPercentage(COLOR.YELLOW, COLOR.BLUE, currentPercent))
     smallProgress.value = currentPercent
     smallProgress:SetValue(smallProgress.value)
 
@@ -71,6 +73,9 @@ function exp:Create()
 
         local lvlStr = 'Level ' .. curLvl .. ' (' .. format('%.1f%%', curPerc * 100) .. ')'
         text:SetText(lvlStr)
+
+        smallProgress:SetColor(utils:GetMergedColorPercentage(COLOR.YELLOW, COLOR.BLUE, curPerc))
+
         smallProgress.value = curPerc
         smallProgress:SetValue(smallProgress.value)
     end
@@ -79,13 +84,13 @@ function exp:Create()
     smallIslandWidget:RegisterEvents({ 'PLAYER_REGEN_ENABLED', 'PLAYER_XP_UPDATE' })
 
     ---@type BaseIsland
-    local largeIsland = isleBase:Create(ISLAND_TYPE.FULL)
+    local largeIsland = isleBase:Create(ISLE_TYPE.FULL)
     if largeIsland == nil then return end
 
     local largeContent = CreateFrame('Frame', nil, largeIsland.widget)
     largeContent:SetAllPoints(largeIsland.widget)
 
-    local largeIconPadding = ISLAND_BASE_PADDING * 2
+    local largeIconPadding = ISLE_BASE_PADDING * 2
 
     -- Bar & Text
     local bar = CreateFrame('StatusBar', nil, largeContent)
@@ -129,7 +134,7 @@ function exp:Create()
             if questId ~= nil and questId > 0 then
                 local rewardXP = GetQuestLogRewardXP(questId)
 
-                if rewardXP > 0 then
+                if rewardXP ~= nil and rewardXP > 0 then
                     if C_QuestLog.IsComplete(questId) or C_QuestLog.ReadyForTurnIn(questId) then
                         completedQuests = completedQuests + 1
                         turnInXP = turnInXP + rewardXP
@@ -145,6 +150,9 @@ function exp:Create()
         local level = 'Level ' .. curLvl .. ' (' .. format('%.1f%%', curPerc * 100) .. ')'
         largeTextTop:SetText(level)
         largeTextBottom:SetText(lvlStr)
+
+        local color = utils:GetMergedColorPercentage(COLOR.YELLOW, COLOR.BLUE, curPerc)
+        bar:SetStatusBarColor(unpack(color))
         bar:SetValue(curPerc)
     end
 

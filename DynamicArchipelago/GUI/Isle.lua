@@ -31,18 +31,18 @@ island.proto = {}
 ---@param islandType number
 function island.proto:EnableIsland(islandType)
     local content = self.widget.Content
-    local widgetSize = ISLAND_SMALL_WIDTH
+    local widgetSize = ISLE_SMALL_WIDTH
 
     ---@type BaseIsland
     local enableFrame = nil
 
-    if islandType == ISLAND_TYPE.SMALL then
-        enableFrame = content[ISLAND_NAME.SMALL]
-        widgetSize = ISLAND_SMALL_WIDTH
+    if islandType == ISLE_TYPE.SMALL then
+        enableFrame = content[ISLE_NAME.SMALL]
+        widgetSize = ISLE_SMALL_WIDTH
     end
-    if islandType == ISLAND_TYPE.FULL then
-        enableFrame = content[ISLAND_NAME.FULL]
-        widgetSize = ISLAND_FULL_WIDTH
+    if islandType == ISLE_TYPE.FULL then
+        enableFrame = content[ISLE_NAME.FULL]
+        widgetSize = ISLE_FULL_WIDTH
     end
 
     if enableFrame == nil then return end
@@ -73,14 +73,14 @@ function island.proto:SetDataContent(content)
     self.widget.Content.Full = content.Full
     self.widget.Content.OnClick = content.OnClick
 
-    self:EnableIsland(ISLAND_TYPE.SMALL)
+    self:EnableIsland(ISLE_TYPE.SMALL)
 end
 
 function island.proto:StartAnimationIn()
     C_Timer.NewTicker(0.001,
         function(ticker)
-            local expectedWidgetHeight = ISLAND_FULL_WIDTH / 4
-            local expectedWidgetWidth = ISLAND_FULL_WIDTH
+            local expectedWidgetHeight = ISLE_FULL_WIDTH / 4
+            local expectedWidgetWidth = ISLE_FULL_WIDTH
 
             local currentHeight = self.widget:GetHeight(true)
             local currentWidth = self.widget:GetWidth(true)
@@ -100,7 +100,7 @@ function island.proto:StartAnimationIn()
                 self.widget:SetHeight(expectedWidgetHeight)
                 self.widget:SetWidth(expectedWidgetWidth)
 
-                island.data:EnableIsland(ISLAND_TYPE.FULL)
+                island.data:EnableIsland(ISLE_TYPE.FULL)
                 ticker:Cancel()
             end
         end,
@@ -110,8 +110,8 @@ end
 function island.proto:StartAnimationOut()
     C_Timer.NewTicker(0.001,
         function(ticker)
-            local expectedWidgetHeight = ISLAND_SMALL_WIDTH / 4
-            local expectedWidgetWidth = ISLAND_SMALL_WIDTH
+            local expectedWidgetHeight = ISLE_SMALL_WIDTH / 4
+            local expectedWidgetWidth = ISLE_SMALL_WIDTH
 
             local currentHeight = self.widget:GetHeight(true)
             local currentWidth = self.widget:GetWidth(true)
@@ -131,7 +131,7 @@ function island.proto:StartAnimationOut()
                 self.widget:SetHeight(expectedWidgetHeight)
                 self.widget:SetWidth(expectedWidgetWidth)
 
-                island.data:EnableIsland(ISLAND_TYPE.SMALL)
+                island.data:EnableIsland(ISLE_TYPE.SMALL)
                 ticker:Cancel()
             end
         end,
@@ -141,7 +141,7 @@ end
 function island.proto:FadeIn()
     self.widget:Show()
     animations:FadeIn(self.widget, 0.05)
-    self:EnableIsland(ISLAND_TYPE.SMALL)
+    self:EnableIsland(ISLE_TYPE.SMALL)
 end
 
 function island.proto:FadeOut()
@@ -156,13 +156,7 @@ end
 --#endregion
 
 function island:OnInitialize()
-    -- ---@type LocationWidget
-    -- local location = addon:GetModule('LocationWidget')
-    -- self.data:SetDataContent(location:Create())
-
-    -- ---@type ExperienceWidget
-    -- local exp = addon:GetModule('ExperienceWidget')
-    -- self.data:SetDataContent(exp:Create())
+    -- ???
 end
 
 ---@return IslandLife
@@ -171,8 +165,8 @@ function island:Create()
 
     ---@type IslandFrame
     local main = CreateFrame('Frame', 'DynamicArchipelagoIsland', UIParent)
-    main:SetWidth(ISLAND_BASE_WIDTH)
-    main:SetHeight(ISLAND_BASE_WIDTH / 4)
+    main:SetWidth(ISLE_BASE_WIDTH)
+    main:SetHeight(ISLE_BASE_WIDTH / 4)
     main:SetPoint('CENTER')
 
     ---@type IsleControllerFrame

@@ -40,27 +40,6 @@ function helpers:CreateIconFrame(iconId)
     return main
 end
 
----@return CircularProgress
-function helpers:CreateCircularProgressFrame()
-    ---@class CircularProgressFrame: AceModule
-    local circ = addon:GetModule('CircularProgressFrame')
-
-    local prog = circ:CreateSpinner()
-    prog.widget:SetPoint('CENTER')
-    prog.widget:SetSize(64, 64)
-    prog:SetTexture(utils:GetMediaDir() .. 'Art\\circular_progress')
-
-    prog:SetClockwise(true)
-    prog:SetReverse(false)
-
-    local bgTex = prog.widget:CreateTexture(nil, 'ARTWORK')
-    bgTex:SetAllPoints(prog.widget)
-    bgTex:SetTexture(utils:GetMediaDir() .. 'Art\\circular_progress')
-    bgTex:SetVertexColor(1, 1, 1, 0.25)
-
-    return prog
-end
-
 function helpers:ApplyMasqueGroup(frame)
     if self.data.masqueGroup == nil then return end
 

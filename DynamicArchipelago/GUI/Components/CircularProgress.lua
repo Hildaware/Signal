@@ -1,12 +1,15 @@
 local addonName = ...
 local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 
----@class CircularProgressFrame: AceModule
-local circ = addon:NewModule('CircularProgressFrame')
+---@class CircularProgress: AceModule, ComponentModule
+local circ = addon:NewModule('CircularProgress')
+
+---@class Utils: AceModule
+local utils = addon:GetModule('Utils')
 
 ---@class ProgressFrame : Frame
 
----@class (exact) CircularProgress
+---@class (exact) CircularProgressComponent: Component
 ---@field widget ProgressFrame
 ---@field scrollFrame ScrollFrame
 ---@field wedge Texture
@@ -22,6 +25,8 @@ local circ = addon:NewModule('CircularProgressFrame')
 ---@field SetClockwise function
 ---@field SetReverse function
 ---@field SetTexture function
+---@field SetVertexColor function
+---@field SetColor function
 circ.proto = {}
 
 local cos, sin, pi2, halfpi = math.cos, math.sin, math.rad(360), math.rad(90)
@@ -118,9 +123,9 @@ local TextureFunctions = {
     SetVertexColor = CreateTextureFunction('SetVertexColor'),
 }
 
----@return CircularProgress
-function circ:CreateSpinner()
-    local progress = setmetatable({}, { __index = self.proto })
+---@return CircularProgressComponent
+local function CreateSpinner()
+    local progress = setmetatable({}, { __index = circ.proto })
     local spinner = CreateFrame('Frame', nil, UIParent)
 
     -- ScrollFrame clips the actively animating portion of the spinner
@@ -192,3 +197,34 @@ function circ:CreateSpinner()
 
     return progress
 end
+
+---@return CircularProgressComponent
+function circ:Create()
+    local spinner = CreateSpinner()
+    spinner.widget:SetPoint('CENTER')
+    spinner.widget:SetSize(64, 64)
+    spinner:SetTexture(utils:GetMediaDir() .. 'Art\\circular_progress')
+
+    spinner:SetClockwise(true)
+    spinner:SetReverse(false)
+
+    local bgTex = spinner.widget:CreateTexture(nil, 'ARTWORK')
+    bgTex:SetAllPoints(spinner.widget)
+    bgTex:SetTexture(utils:GetMediaDir() .. 'Art\\circular_progress')
+    bgTex:SetVertexColor(1, 1, 1, 0.25)
+
+    ---@param color ColorMixin
+    spinner.SetColor = function(_, color)
+        spinner:SetVertexColor(unpack(color))
+
+        local rgbaColor = CreateColor(unpack(color))
+        local hexColor = rgbaColor:GenerateHexColor()
+        local lighterColor = utils:LightenColor(hexColor, -50)
+        local newColor = CreateColorFromHexString(lighterColor)
+        bgTex:SetVertexColor(newColor.r, newColor.g, newColor.b, 1.0)
+    end
+
+    return spinner
+end
+
+circ:Enable()

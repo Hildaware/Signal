@@ -155,11 +155,11 @@ end
 ---@param type integer -- ISLAND_TYPE
 ---@return BaseIsland?
 function base:Create(type)
-    local size = ISLAND_FULL_WIDTH
-    if type == ISLAND_TYPE.SMALL then
-        size = ISLAND_SMALL_WIDTH
-    elseif type == ISLAND_TYPE.FULL then
-        size = ISLAND_FULL_WIDTH
+    local size = ISLE_FULL_WIDTH
+    if type == ISLE_TYPE.SMALL then
+        size = ISLE_SMALL_WIDTH
+    elseif type == ISLE_TYPE.FULL then
+        size = ISLE_FULL_WIDTH
     else
         print('No Size!!')
         return nil

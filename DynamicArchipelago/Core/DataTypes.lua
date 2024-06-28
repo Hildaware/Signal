@@ -34,10 +34,4 @@ local types = addon:NewModule('Types')
 
 --#endregion
 
----@meta
-
----@return number
----@param questId number
-function GetQuestLogRewardXP(questId) end
-
 types:Enable()

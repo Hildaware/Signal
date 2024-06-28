@@ -10,6 +10,7 @@
 
 Libs/Libs.xml
 Core/Core.xml
+GUI/Components/Components.xml
 GUI/Isles/Isles.xml
 GUI/GUI.xml
 DynamicArchipelago.lua

@@ -19,24 +19,24 @@ function location:Create()
     ---@type IslandContent
     local islandData = { Small = nil, Full = nil, widget = nil }
 
-    local smallIslandWidget = isleBase:Create(ISLAND_TYPE.SMALL)
+    local smallIslandWidget = isleBase:Create(ISLE_TYPE.SMALL)
     if smallIslandWidget == nil then return end
 
     local smallContent = CreateFrame('Frame', nil, smallIslandWidget.widget)
     smallContent:SetAllPoints(smallIslandWidget.widget)
 
-    local smallIconSize = smallIslandWidget.widget:GetHeight() - (ISLAND_BASE_PADDING * 2)
+    local smallIconSize = smallIslandWidget.widget:GetHeight() - (ISLE_BASE_PADDING * 2)
 
     local smallIcon = helper:CreateIconFrame(237386)
     smallIcon:SetParent(smallContent)
     smallIcon:ClearAllPoints()
-    smallIcon:SetPoint('LEFT', ISLAND_BASE_PADDING, 0)
+    smallIcon:SetPoint('LEFT', ISLE_BASE_PADDING, 0)
     smallIcon:SetSize(smallIconSize, smallIconSize)
 
     local locationText = smallContent:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlightLarge')
     locationText:SetJustifyH('CENTER')
-    locationText:SetPoint('LEFT', smallIcon, 'RIGHT', ISLAND_BASE_PADDING, 1)
-    locationText:SetPoint('RIGHT', -ISLAND_BASE_PADDING, 1)
+    locationText:SetPoint('LEFT', smallIcon, 'RIGHT', ISLE_BASE_PADDING, 1)
+    locationText:SetPoint('RIGHT', -ISLE_BASE_PADDING, 1)
 
     smallIslandWidget:SetChild(smallContent)
 
@@ -61,15 +61,15 @@ function location:Create()
     smallIslandWidget:RegisterEventFrame('OnUpdate', smallOnEnable)
 
     ---@type BaseIsland
-    local largeIsland = isleBase:Create(ISLAND_TYPE.FULL)
+    local largeIsland = isleBase:Create(ISLE_TYPE.FULL)
     if largeIsland == nil then return end
 
     local largeContent = CreateFrame('Frame', nil, largeIsland.widget)
     largeContent:SetAllPoints(largeIsland.widget)
 
-    local largeIconSize = largeIsland.widget:GetHeight() - (ISLAND_BASE_PADDING * 4)
+    local largeIconSize = largeIsland.widget:GetHeight() - (ISLE_BASE_PADDING * 4)
 
-    local largeIconPadding = ISLAND_BASE_PADDING * 2
+    local largeIconPadding = ISLE_BASE_PADDING * 2
 
     local largeIcon = helper:CreateIconFrame(237386)
     largeIcon:SetParent(largeContent)

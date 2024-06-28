@@ -20,26 +20,11 @@ local core = addon:GetModule('Peninsula')
 ---@class Isle: AceModule
 local island = addon:GetModule('Isle')
 
-ISLAND_NAME = {
-    SMALL = 'Small',
-    FULL = 'Full'
-}
-
-ISLAND_TYPE = {
-    SMALL = 1,
-    FULL = 2
-}
-
-ISLAND_BASE_PADDING = 4
-
 ---@class (exact) Archipelago
 ---@field widget Frame
 ---@field island IslandLife
 ---@field core ArchipelagoCore
 arch.proto = {}
-
--- TODO: When core is inactive > show the island
--- TODO: When the core is activated > hide the island
 
 function arch:OnInitialize()
     self:Create()
