@@ -17,25 +17,15 @@ local events = addon:GetModule('Events')
 ---@class Animations: AceModule
 local animations = addon:GetModule('Animations')
 
----@class CoreContent : AnimatedFrame
----@field children BaseArchipelagoItem[]
----@field height number
-
----@class ArchipelagoWidget : Frame
----@field Base CoreContent
----@field TopCap PeninsulaBase
----@field BottomCap PeninsulaBase
----@field height number
----@field GrowAnimation function
----@field ShrinkAnimation function
+---@class PeninsulaWidget
 core.widget = {}
 
----@class (exact) ArchipelagoCore
+---@class (exact) PeninsulaCore
 ---@field AddChild function
 ---@field RemoveChild function
 ---@field itemData table
 ---@field items table
----@field widget ArchipelagoWidget
+---@field widget PeninsulaWidget
 ---@field isMaximized boolean
 core.proto = {}
 
@@ -44,8 +34,6 @@ local nonExpandedCapHeight = 8
 local nonExpandedWidth = 64
 
 local CORE_BASE_PADDING = 8
-
--- TODO: Animations
 
 --#region Core Methods
 
@@ -136,7 +124,7 @@ local function CreateCapAnimationOut(frame)
     return anim
 end
 
----@param widget BaseArchipelagoItem
+---@param widget BasePeninsula
 function core.proto:AddChild(widget)
     local coreContent = self.widget.Base
     local childCount = #coreContent.children
@@ -185,7 +173,7 @@ function core.proto:AddChild(widget)
         widget.height)
 end
 
----@param widget BaseArchipelagoItem
+---@param widget BasePeninsula
 function core.proto:RemoveChild(widget)
     local coreContent = self.widget.Base
 
@@ -237,7 +225,7 @@ function core:OnInitialize()
     self:Create()
 end
 
----@return ArchipelagoCore
+---@return PeninsulaCore
 function core:Create()
     local position = database:GetWidgetPosition()
     local width = database:GetWidgetWidth()
@@ -246,7 +234,7 @@ function core:Create()
     self.data.items = {}
     self.data.itemData = {}
 
-    ---@type ArchipelagoWidget
+    ---@type PeninsulaWidget
     local contentContainer = CreateFrame('Frame', 'DynamicArchipelagoCore', UIParent)
     contentContainer.GrowAnimation = core.widget.GrowAnimation
     contentContainer.ShrinkAnimation = core.widget.ShrinkAnimation
@@ -287,7 +275,7 @@ function core:Create()
 
     contentContainer.BottomCap = bottomContentCap
 
-    ---@type CoreContent
+    ---@type PeninsulaWidgetContent
     local base = CreateFrame('Frame', nil, contentContainer)
     base:SetPoint('TOPLEFT', CORE_BASE_PADDING, -(CORE_BASE_PADDING * 2))
     base:SetPoint('BOTTOMRIGHT', -CORE_BASE_PADDING, CORE_BASE_PADDING * 2)
@@ -344,7 +332,7 @@ function events:DYNAMIC_ARCHIPELAGO_ADD_CORE_ITEM(_, widget)
     core.data:AddChild(widget)
 end
 
----@param widget BaseArchipelagoItem
+---@param widget BasePeninsula
 function events:DYNAMIC_ARCHIPELAGO_ITEM_TIMER_END(_, widget)
     core.data:RemoveChild(widget)
 end

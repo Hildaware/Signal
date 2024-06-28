@@ -33,7 +33,7 @@ function island.proto:EnableIsland(islandType)
     local content = self.widget.Content
     local widgetSize = ISLE_SMALL_WIDTH
 
-    ---@type BaseIsland
+    ---@type BaseIsle
     local enableFrame = nil
 
     if islandType == ISLE_TYPE.SMALL then
@@ -213,7 +213,7 @@ function island:Create()
     return self.data
 end
 
----@param widget ArchipelagoWidget
+---@param widget PeninsulaWidget
 function events:DYNAMIC_ARCHIPELAGO_SET_ISLE_WIDGET(_, widget)
     if island.data == nil then return end
     local newWidget = widget:Create()

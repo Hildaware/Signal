@@ -13,31 +13,8 @@ local events = addon:GetModule('Events')
 ---@class Database: AceModule
 local database = addon:GetModule('Database')
 
---#region Types
-
----@class BaseArchipelagoFrame : Frame
----@field header FontString
----@field icon Frame
----@field content Frame
----@field progress StatusBar
----@field animationIn AnimationGroup
----@field animationOut AnimationGroup
-
----@class (exact) BaseArchipelagoItem : DynamicArchipelagoItem
----@field id string
----@field frame BaseArchipelagoFrame
----@field child DynamicArchipelagoItem
----@field SetHeader function
----@field SetType function
----@field SetContent function
----@field SetIcon function
----@field GetHeaderHeight function
----@field height number
----@field GetIconWidth function
----@field GetWidgetWidth function
+---@class BasePeninsula
 penBase.baseProto = {}
-
---#endregion
 
 local padding = 8
 
@@ -131,12 +108,12 @@ function penBase:OnInitialize()
     -- _G['DynamicArchipelago'].BaseFrame = self
 end
 
----@param item BaseArchipelagoItem
+---@param item BasePeninsula
 function penBase:_DoReset(item)
     item:CleanBaseData()
 end
 
----@return BaseArchipelagoItem
+---@return BasePeninsula
 function penBase:_DoCreate()
     local i = setmetatable({}, { __index = penBase.baseProto })
     i.id = utils:GenerateId()
@@ -219,9 +196,9 @@ function penBase:_DoCreate()
 end
 
 ---@param visibilityTime number
----@return BaseArchipelagoItem
+---@return BasePeninsula
 function penBase:Create(visibilityTime)
-    ---@type BaseArchipelagoItem
+    ---@type BasePeninsula
     local i = self._pool:Acquire()
     C_Timer.NewTimer(visibilityTime, function()
         i.frame.animationOut:Play()

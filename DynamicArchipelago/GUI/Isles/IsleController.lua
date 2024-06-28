@@ -11,12 +11,6 @@ local resolver = addon:GetModule('Resolver')
 ---@class Events: AceModule
 local events = addon:GetModule('Events')
 
----@class AvailableWidget
----@field widget ArchipelagoWidget
----@field priority number
----@field trigger function? -- This should always return a true / false
----@field event WowEvent?
-
 ---@class (exact) IsleController
 ---@field eventFrame Frame
 ---@field currentWidget AvailableWidget

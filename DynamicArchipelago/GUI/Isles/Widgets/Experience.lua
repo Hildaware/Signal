@@ -22,7 +22,7 @@ function exp:Create()
     ---@type IslandContent
     local islandData = { Small = nil, Full = nil, widget = nil }
 
-    ---@type BaseIsland
+    ---@type BaseIsle
     local smallIslandWidget = isleBase:Create(ISLE_TYPE.SMALL)
     if smallIslandWidget == nil then return end
 
@@ -83,7 +83,7 @@ function exp:Create()
     smallIslandWidget:RegisterEventFrame('OnEvent', smallOnEnable)
     smallIslandWidget:RegisterEvents({ 'PLAYER_REGEN_ENABLED', 'PLAYER_XP_UPDATE' })
 
-    ---@type BaseIsland
+    ---@type BaseIsle
     local largeIsland = isleBase:Create(ISLE_TYPE.FULL)
     if largeIsland == nil then return end
 

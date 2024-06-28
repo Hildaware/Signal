@@ -4,12 +4,6 @@ local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 ---@class Components: AceModule
 local components = addon:NewModule('Components')
 
----@class (exact) ComponentModule
----@field Create function
-
----@class (exact) Component
----@field widget Frame
-
 ---@type ComponentModule[]
 components.items = {
     ['CircularProgress'] = addon:GetModule('CircularProgress')

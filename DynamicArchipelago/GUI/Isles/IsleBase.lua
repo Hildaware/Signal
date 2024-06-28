@@ -4,20 +4,7 @@ local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 ---@class IsleBase: AceModule
 local base = addon:NewModule('IsleBase')
 
----@class (exact) IslandEventFrame : Frame
----@field lastUpdated number?
----@field registeredEvents WowEvent | WowEvent[]
----@field OnEnable function
----@field OnDisable function
-
----@class (exact) BaseIsland : DynamicArchipelagoItem
----@field type integer -- ISLAND_TYPE
----@field widget Frame
----@field eventFrame IslandEventFrame?
----@field child Frame?
----@field SetChild function
----@field Connect function
----@field Disconnect function
+---@class BaseIsle
 base.proto = {}
 
 function base.proto:Connect()
@@ -71,7 +58,7 @@ end
 ---@param enableFunc function
 ---@param disableFunc function?
 function base.proto:RegisterEventFrame(scriptType, enableFunc, disableFunc)
-    ---@type IslandEventFrame
+    ---@type IsleEventFrame
     local eventFrame = CreateFrame('Frame', nil, self.widget)
     eventFrame.lastUpdated = 0
 
@@ -132,12 +119,12 @@ function base:OnInitialize()
     end
 end
 
----@param item BaseIsland
+---@param item BaseIsle
 function base:_DoReset(item)
     item:CleanBaseData()
 end
 
----@return BaseIsland?
+---@return BaseIsle?
 function base:_DoCreate()
     local i = setmetatable({}, { __index = base.proto })
     i.child = nil
@@ -153,7 +140,7 @@ function base:_DoCreate()
 end
 
 ---@param type integer -- ISLAND_TYPE
----@return BaseIsland?
+---@return BaseIsle?
 function base:Create(type)
     local size = ISLE_FULL_WIDTH
     if type == ISLE_TYPE.SMALL then

@@ -2,7 +2,7 @@
 local addonName = ...
 local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 
----@class ArchipelagoWidget: AceModule
+---@class PeninsulaWidget: AceModule
 local arch = addon:NewModule('Archipelago')
 
 ---@class Database: AceModule
@@ -23,9 +23,8 @@ local island = addon:GetModule('Isle')
 ---@class (exact) Archipelago
 ---@field widget Frame
 ---@field island IslandLife
----@field core ArchipelagoCore
+---@field core PeninsulaCore
 arch.proto = {}
-
 function arch:OnInitialize()
     self:Create()
 end

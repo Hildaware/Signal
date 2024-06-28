@@ -25,8 +25,8 @@ local types = addon:NewModule('Types')
 
 ---@class (exact) IslandContent
 ---@field widget Frame
----@field Small BaseIsland
----@field Full BaseIsland
+---@field Small BaseIsle
+---@field Full BaseIsle
 ---@field OnClick function?
 
 ---@class IslandFrame : AnimatedFrame

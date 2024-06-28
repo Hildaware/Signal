@@ -60,7 +60,7 @@ function location:Create()
 
     smallIslandWidget:RegisterEventFrame('OnUpdate', smallOnEnable)
 
-    ---@type BaseIsland
+    ---@type BaseIsle
     local largeIsland = isleBase:Create(ISLE_TYPE.FULL)
     if largeIsland == nil then return end
 

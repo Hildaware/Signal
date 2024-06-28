@@ -7,10 +7,8 @@ local circ = addon:NewModule('CircularProgress')
 ---@class Utils: AceModule
 local utils = addon:GetModule('Utils')
 
----@class ProgressFrame : Frame
-
 ---@class (exact) CircularProgressComponent: Component
----@field widget ProgressFrame
+---@field widget Frame
 ---@field scrollFrame ScrollFrame
 ---@field wedge Texture
 ---@field textures Texture[]
