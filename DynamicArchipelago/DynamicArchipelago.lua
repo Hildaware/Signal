@@ -1,6 +1,14 @@
 local addonName = ...
+
+---@class DynamicArchipelago: AceAddon
 local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 ---@cast addon +AceHook-3.0
+
+---@class DynamicArchipelagoStatus
+---@field isReady boolean
+addon.status = {
+    isReady = false
+}
 
 function addon:OnInitialize()
     -- TODO: AddonCompartment

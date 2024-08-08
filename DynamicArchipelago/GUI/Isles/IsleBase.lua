@@ -148,7 +148,6 @@ function base:Create(type)
     elseif type == ISLE_TYPE.FULL then
         size = ISLE_FULL_WIDTH
     else
-        print('No Size!!')
         return nil
     end
 

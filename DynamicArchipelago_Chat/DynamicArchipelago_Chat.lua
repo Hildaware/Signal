@@ -106,7 +106,6 @@ function chatFrame.chatProto:Release()
 end
 
 function chatFrame.chatProto:Wipe()
-    print('Wiping out Chat Item')
     self.content:Hide()
     self.content:SetParent(nil)
     self.content:ClearAllPoints()

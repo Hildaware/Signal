@@ -62,7 +62,6 @@ function exp:Create()
     smallIslandWidget:SetChild(smallContent)
 
     local smallOnEnable = function(eventFrame, eventName, args)
-        print('smallOnEnable', eventName)
         if eventName ~= 'PLAYER_XP_UPDATE' and eventName ~= 'PLAYER_REGEN_ENABLED' then return end
 
         local curLvl = resolver:GetCurrentLevel()

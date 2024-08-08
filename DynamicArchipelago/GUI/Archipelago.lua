@@ -1,5 +1,7 @@
 ---@diagnostic disable: assign-type-mismatch
 local addonName = ...
+
+---@class DynamicArchipelago: AceAddon
 local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 
 ---@class PeninsulaWidget: AceModule
@@ -25,6 +27,7 @@ local island = addon:GetModule('Isle')
 ---@field island IslandLife
 ---@field core PeninsulaCore
 arch.proto = {}
+
 function arch:OnInitialize()
     self:Create()
 end
@@ -58,6 +61,8 @@ function arch:Create()
 
     frame:Show()
     self.data.island:FadeIn()
+
+    addon.status.isReady = true
 end
 
 function events:DYNAMIC_ARCHIPELAGO_CORE_START()

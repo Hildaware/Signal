@@ -34,7 +34,8 @@ end
 
 ---@return boolean
 function resolver:InInstance()
-    return IsInInstance() ---@diagnostic disable-line: redundant-return-value
+    local inInstance, instanceType = IsInInstance()
+    return inInstance
 end
 
 resolver:Enable()
