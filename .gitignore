@@ -1,10 +1,1 @@
-*
-!*/
-!/.gitignore
-!/DynamicArchipelago.code-workspace
-!DynamicArchipelago/**
-!DynamicArchipelago_Chat/**
-ConsoleBags/
-RideTheWind/
-
 **/.DS_Store
