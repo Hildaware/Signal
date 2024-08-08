@@ -14,8 +14,10 @@ local types = addon:NewModule('Types')
 ---@field animationOut AnimationGroup?
 
 ---@class Coords
----@field X number
----@field Y number
+---@field point FramePoint
+---@field relativePoint FramePoint
+---@field x number
+---@field y number
 
 ---@class PeninsulaBase : Frame
 ---@field bg Texture

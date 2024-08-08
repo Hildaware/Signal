@@ -12,9 +12,12 @@ local defaults = {
             VisibilityTimes = {
                 Chat = 5.0
             },
+            ---@type Coords
             Position = {
-                X = 0,
-                Y = 600
+                point = 'CENTER',
+                relativePoint = 'CENTER',
+                x = 0,
+                y = 0
             },
             Locked = true
         }
@@ -56,16 +59,26 @@ end
 ---@param state boolean
 function database:SetWidgetState(state)
     database.internal.global.Settings.Locked = state
+
+
+    ---@class PeninsulaWidget: AceModule
+    local arch = addon:GetModule('Archipelago')
+    arch:ToggleLockedState(state)
+end
+
+---@param position Coords
+function database:SetWidgetPosition(position)
+    database.internal.global.Settings.Position = position
 end
 
 ---@param position number
 function database:SetWidgetPositionX(position)
-    database.internal.global.Settings.Position.X = position
+    database.internal.global.Settings.Position.x = position
 end
 
 ---@param position number
 function database:SetWidgetPositionY(position)
-    database.internal.global.Settings.Position.Y = position
+    database.internal.global.Settings.Position.y = position
 end
 
 --#endregion

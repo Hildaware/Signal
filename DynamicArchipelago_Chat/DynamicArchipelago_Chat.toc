@@ -7,7 +7,6 @@
 ## RequiredDeps: DynamicArchipelago
 ## LoadOnDemand: 0
 ## DefaultState: enabled
-## SavedVariables: DynamicArchipelagoDB
 ## X-Curse-Project-ID: TODO
 
 Libs/Libs.xml

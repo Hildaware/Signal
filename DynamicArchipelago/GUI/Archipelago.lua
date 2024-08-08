@@ -39,8 +39,42 @@ function arch:Create()
     local width = database:GetWidgetWidth()
 
     local frame = CreateFrame('Frame', 'DynamicArchipelago', UIParent)
-    frame:SetPoint('CENTER')
+    frame:SetPoint(position.point, UIParent, position.relativePoint, position.x, position.y)
     frame:SetSize(width, 300)
+
+    frame:SetScript('OnDragStart', function(f, button)
+        if button == 'LeftButton' then
+            f:StartMoving()
+        end
+    end)
+    frame:SetScript("OnDragStop", function(f)
+        f:StopMovingOrSizing()
+
+        local point, _, relativePoint, offsetX, offsetY = frame:GetPoint(1)
+        database:SetWidgetPosition({ point = point, relativePoint = relativePoint, x = offsetX, y = offsetY })
+    end)
+
+    --#region Movable Items
+
+    frame.movable = {}
+
+    local closeButton = CreateFrame('Button', nil, frame, 'UIPanelCloseButton')
+    closeButton:SetPoint('TOPRIGHT', frame, 'TOPRIGHT', 0, 0)
+    closeButton:SetScript('OnClick', function()
+        arch:ToggleLockedState(true)
+    end)
+
+    closeButton:Hide()
+
+    frame.movable.close = closeButton
+
+    local movableTexture = frame:CreateTexture(nil, 'BACKGROUND')
+    movableTexture:SetAllPoints(frame)
+    movableTexture:SetColorTexture(0, 0, 0, 0.5)
+    movableTexture:Hide()
+    frame.movable.texture = movableTexture
+
+    --#endregion
 
     self.data.widget = frame
 
@@ -63,6 +97,23 @@ function arch:Create()
     self.data.island:FadeIn()
 
     addon.status.isReady = true
+end
+
+---@param state boolean
+function arch:ToggleLockedState(state)
+    local widget = self.data.widget
+    if state == true then
+        widget.movable.texture:Hide()
+        widget.movable.close:Hide()
+        widget:SetMovable(false)
+        widget:EnableMouse(false)
+    else
+        widget.movable.texture:Show()
+        widget.movable.close:Show()
+        widget:RegisterForDrag('LeftButton')
+        widget:SetMovable(true)
+        widget:EnableMouse(true)
+    end
 end
 
 function events:DYNAMIC_ARCHIPELAGO_CORE_START()
