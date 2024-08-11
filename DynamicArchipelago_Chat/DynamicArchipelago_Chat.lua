@@ -25,6 +25,8 @@ CHAT_TYPE = {
     RAID = 4
 }
 
+local ITEM_DEFAULT_HEIGHT = 90
+
 --#region Types
 
 ---@class ChatData
@@ -74,15 +76,24 @@ local function GetChatTypeColored(chatType)
 end
 
 ---@param playerId string
-function chatFrame.chatProto:SetPortrait(playerId)
+---@param class string
+function chatFrame.chatProto:SetPortrait(playerId, class)
     local unitId = gInspect:GuidToUnit(playerId)
     if unitId then
         SetPortraitTexture(self.icon.texture, unitId, false)
     else
-        local texture = "Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES"
-        local coords = CLASS_ICON_TCOORDS[class]
-        self.icon.texture:SetTexture(texture)
-        self.icon.texture:SetTexCoord(table.unpack(coords))
+        local classAtlas = GetClassAtlas(class)
+        local texture = ("Interface\\ICONS\\ClassIcon_" .. class)
+        if classAtlas then
+            self.icon.texture:SetAtlas(classAtlas)
+        else
+            self.icon.texture:SetTexture(texture)
+        end
+        -- TODO: Class? That doesn't exist
+        -- local texture = "Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES"
+        -- local coords = CLASS_ICON_TCOORDS[class]
+        -- self.icon.texture:SetTexture(texture)
+        -- self.icon.texture:SetTexCoord(table.unpack(coords))
     end
 end
 
@@ -164,42 +175,42 @@ function chatFrame:_DoCreate()
     local i = setmetatable({}, { __index = chatFrame.chatProto })
 
     local baseWidth = baseFrame.baseProto:GetWidgetWidth()
-    local iconWidth = baseFrame.baseProto:GetIconWidth()
 
     local iconFrame = CreateFrame('Frame', nil, UIParent)
-    iconFrame:SetWidth(iconWidth)
-    iconFrame:SetHeight(128) -- Default Height
+    iconFrame:SetWidth(ITEM_DEFAULT_HEIGHT - 12)
+    iconFrame:SetHeight(ITEM_DEFAULT_HEIGHT - 12)
     iconFrame:Hide()
 
     local bgTex = iconFrame:CreateTexture()
-    bgTex:SetPoint('TOPLEFT', iconFrame, 'TOPLEFT', 14, 2)
-    bgTex:SetPoint('BOTTOMRIGHT', iconFrame, 'BOTTOMRIGHT', -14, 12)
+    bgTex:SetPoint('TOP', iconFrame, 'TOP', 0, -2)
+    bgTex:SetWidth(ITEM_DEFAULT_HEIGHT - 32)
+    bgTex:SetHeight(ITEM_DEFAULT_HEIGHT - 32)
     bgTex:SetTexture(utils:GetMediaDir() .. 'Art\\box')
     bgTex:SetVertexColor(0, 0, 0, 0.65)
 
     local iconTex = iconFrame:CreateTexture()
-    iconTex:SetPoint('TOPLEFT', iconFrame, 'TOPLEFT', 14, -2)
-    iconTex:SetPoint('BOTTOMRIGHT', iconFrame, 'BOTTOMRIGHT', -14, 16)
+    iconTex:SetPoint('TOPLEFT', bgTex, 'TOPLEFT', 2, -2)
+    iconTex:SetPoint('BOTTOMRIGHT', bgTex, 'BOTTOMRIGHT', -2, 2)
 
-    local iconLabel = iconFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlight')
+    local iconLabel = iconFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormalTiny')
     iconLabel:SetText('Player Name')
     iconLabel:SetJustifyH('CENTER')
-    iconLabel:SetPoint('TOP', iconTex, 'BOTTOM', 0, -8)
+    iconLabel:SetPoint('TOP', iconTex, 'BOTTOM', 0, -4)
 
     local contentFrame = CreateFrame('Frame', nil, UIParent)
-    contentFrame:SetWidth(baseWidth - iconWidth)
-    contentFrame:SetHeight(128)
+    contentFrame:SetWidth(baseWidth - ITEM_DEFAULT_HEIGHT)
+    contentFrame:SetHeight(ITEM_DEFAULT_HEIGHT)
     contentFrame:Hide()
 
-    local chatType = contentFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormalHuge')
+    local chatType = contentFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormal')
     chatType:SetText('CHAT TYPE')
     chatType:SetPoint('TOPLEFT')
 
-    local message = contentFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormal')
+    local message = contentFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormalSmall')
     message:SetText('MESSAGE.')
     message:SetWordWrap(true)
     message:SetJustifyH('LEFT')
-    message:SetJustifyV('TOP')
+    message:SetJustifyV('MIDDLE')
     message:SetPoint('TOPLEFT', chatType, 'BOTTOMLEFT')
     message:SetPoint('BOTTOMRIGHT')
 
@@ -227,29 +238,26 @@ function chatFrame:OnEvent(chatType, ...)
     local locClass, engClass, locRace, engRace, gender, className, server = GetPlayerInfoByGUID(playerId)
     if engClass == nil or engClass == '' then return end
 
-    local viewTime = database:GetVisibilityTimeByType(Type)
+    local viewTime = string.len(message) * 0.10
     local widget = baseFrame:Create(viewTime)
     widget:SetType(Type)
 
     local formattedName = '|c' .. utils:GetClassColor(engClass) .. name .. '|r'
 
     local chatItem = chatFrame:Create()
-    chatItem:SetPortrait(playerId)
-    chatItem:SetIconLabel(formattedName)
+    chatItem:SetPortrait(playerId, engClass)
+    chatItem:SetIconLabel(string.sub(formattedName, 1, 24))
 
     chatItem:SetChatType(chatType)
     chatItem:SetMessage(message)
 
     widget:SetIcon(chatItem.icon)
+
+    local chatHeight = max(string.len(message) * 1.1, ITEM_DEFAULT_HEIGHT)
+    chatItem.content:SetHeight(chatHeight)
     widget:SetContent(chatItem.content)
 
-    -- height
-    local defaultHeight = 128
-    local height = widget:GetHeaderHeight()
-    height = height + chatItem.content.message:GetHeight()
-    height = height + chatItem.content.chatType:GetHeight()
-
-    widget.height = max(defaultHeight, height)
+    widget.height = max(ITEM_DEFAULT_HEIGHT, chatHeight)
 
     chatItem.content:Show()
     chatItem.icon:Show()

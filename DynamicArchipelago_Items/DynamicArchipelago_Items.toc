@@ -1,0 +1,12 @@
+## Interface: 110000
+## Title: Dynamic Archipelago - Items
+## Notes: Item Notifications for Dynamic Archipelago
+## Authors: Sel
+## Version: 11.0.0
+## IconTexture: Interface\AddOns\DynamicArchipelago\Media\logo
+## RequiredDeps: DynamicArchipelago
+## LoadOnDemand: 0
+## DefaultState: enabled
+## X-Curse-Project-ID: TODO
+
+DynamicArchipelago_Items.lua

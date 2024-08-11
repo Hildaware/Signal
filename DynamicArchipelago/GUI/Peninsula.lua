@@ -29,18 +29,18 @@ core.widget = {}
 ---@field isMaximized boolean
 core.proto = {}
 
-local expandedCapHeight = 16
-local nonExpandedCapHeight = 8
-local nonExpandedWidth = 64
+local expandedCapHeight = 10
+local CORE_BASE_PADDING = 4
 
-local CORE_BASE_PADDING = 8
+local growthTimer = nil
+local shrinkTimer = nil
 
 --#region Core Methods
 
 function core.widget:GrowAnimation()
     C_Timer.NewTicker(0.001,
         function(ticker)
-            local expectedWidth = 512
+            local expectedWidth = database:GetWidgetWidth()
 
             if animations:Grow(self, nil, expectedWidth, nil, 12) then
                 ticker:Cancel()
@@ -61,69 +61,6 @@ function core.widget:ShrinkAnimation()
         256)
 end
 
----@param frame Frame
----@param onFinished function?
----@return AnimationGroup
-local function CreateCapAnimationIn(frame, onFinished)
-    local anim = frame:CreateAnimationGroup()
-
-    local fade = anim:CreateAnimation('Alpha')
-    fade:SetDuration(0.55)
-    fade:SetFromAlpha(0.25)
-    fade:SetToAlpha(1.0)
-
-    local grow = anim:CreateAnimation('Scale')
-    grow:SetDuration(0.55)
-    grow:SetScaleFrom(0.125, 1.0)
-    grow:SetScaleTo(1.0, 1.0)
-
-    if onFinished ~= nil then
-        anim:SetScript('OnFinished', function()
-            onFinished()
-        end)
-    end
-
-    return anim
-end
-
----@param frame Frame
----@return AnimationGroup
-local function CreateCapAnimationOut(frame)
-    local anim = frame:CreateAnimationGroup()
-
-    local fade = anim:CreateAnimation('Alpha')
-    fade:SetDuration(0.55)
-    fade:SetFromAlpha(1.0)
-    fade:SetToAlpha(0.25)
-
-    local shrink = anim:CreateAnimation('Scale')
-    shrink:SetDuration(0.55)
-    shrink:SetScaleFrom(1.0, 1.0)
-    shrink:SetScaleTo(0.125, 1.0)
-
-    anim:SetScript('OnFinished', function()
-        local widget = core.data.widget
-        widget:SetWidth(nonExpandedWidth)
-        widget.height = nonExpandedCapHeight * 2
-        widget:SetHeight(widget.height)
-
-        widget.TopCap:SetWidth(nonExpandedWidth)
-        widget.TopCap:SetHeight(nonExpandedCapHeight)
-
-        widget.BottomCap:SetWidth(nonExpandedWidth)
-        widget.BottomCap:SetHeight(nonExpandedCapHeight)
-
-        widget.Base:SetWidth(nonExpandedWidth)
-        widget:SetAlpha(0.25)
-        -- if core.data.shouldHide then -- TODO: Lock this behind a toggle for people
-        --     core.data.widget:Hide()
-        --     core.data.shouldHide = false
-        -- end
-    end)
-
-    return anim
-end
-
 ---@param widget BasePeninsula
 function core.proto:AddChild(widget)
     local coreContent = self.widget.Base
@@ -132,86 +69,100 @@ function core.proto:AddChild(widget)
     widget.frame:SetParent(coreContent)
     widget.frame:ClearAllPoints()
 
+    local expectedPositionY = 0
+    for _, childWidget in pairs(coreContent.children) do
+        expectedPositionY = expectedPositionY + childWidget.height
+    end
+
     if childCount == 0 then
         widget.frame:SetPoint('TOPLEFT', coreContent)
-    elseif childCount == 1 then
-        widget.frame:SetPoint('TOPLEFT', coreContent.children[childCount].frame, 'BOTTOMLEFT')
     else
-        widget.frame:SetPoint('TOPLEFT', coreContent.children[childCount - 1].frame, 'BOTTOMLEFT')
+        widget.frame:SetPoint('TOPLEFT', coreContent, 'TOPLEFT', 0, -(expectedPositionY + 1))
     end
 
     coreContent.children[childCount + 1] = widget
 
-    local expectedHeight = coreContent.height + widget.height
-    local expectedWidgetHeight = self.widget.height + widget.height
+    childCount = childCount + 1
+
+    local expectedHeight = (expectedPositionY + widget.height) + 1
+    local expectedWidgetHeight = (expandedCapHeight * 2) + expectedHeight
 
     if not coreContent:IsShown() then
         coreContent:Show()
     end
 
-    C_Timer.NewTicker(0.001,
+    -- Trigger Core Content Growth
+    if growthTimer and not growthTimer:IsCancelled() then
+        growthTimer:Cancel()
+    end
+
+    widget.frame:SetHeight(widget.height)
+    widget.frame:Show()
+    widget.frame.animationIn:Play()
+
+    growthTimer = C_Timer.NewTicker(0.001,
         function(ticker)
-            -- Scale the widget
             if self.widget.height < expectedWidgetHeight then
-                self.widget.height = self.widget.height + 4
+                self.widget.height = self.widget.height + (4 * childCount)
                 self.widget:SetHeight(min(self.widget.height, expectedWidgetHeight))
             end
 
-            -- Scale the content container
-            if coreContent.height < expectedHeight then
-                coreContent.height = coreContent.height + 4
-                coreContent:SetHeight(min(coreContent.height, expectedHeight))
-            end
-
-            if self.widget.height >= expectedWidgetHeight and coreContent.height >= expectedHeight then
-                widget.frame:SetHeight(widget.height)
-                widget.frame:Show()
-                widget.frame.animationIn:Play()
+            if self.widget.height >= expectedWidgetHeight then
+                self.widget.height = expectedWidgetHeight
+                self.widget:SetHeight(expectedWidgetHeight)
                 ticker:Cancel()
             end
         end,
-        widget.height)
+        1000)
 end
 
 ---@param widget BasePeninsula
 function core.proto:RemoveChild(widget)
     local coreContent = self.widget.Base
+    local childCount = #coreContent.children
 
+    local currentPositionY = 0
+    local previousChildHeight = 0
+    local childrenToRemove = {}
     for index, child in pairs(coreContent.children) do
+        -- Get the current position, subtract its own height
         if child.id == widget.id then
-            -- Set the next item in the stack to the removed point
-            if #coreContent.children > index then
-                local point, relativeTo, relativePoint, _, _ = child.frame:GetPointByName('TOPLEFT')
-                coreContent.children[index + 1].frame:SetPoint(point, relativeTo, relativePoint)
-            end
-
-            tremove(coreContent.children, index)
+            previousChildHeight = child.height
+            tinsert(childrenToRemove, index)
+        else
+            local point, relativeTo, relativePoint, offsetX, offsetY = child.frame:GetPointByName('TOPLEFT')
+            local newPos = offsetY + previousChildHeight
+            currentPositionY = currentPositionY + child.height
+            child.frame:SetPoint(point, relativeTo, relativePoint, offsetX, newPos)
         end
     end
 
-    local expectedHeight = coreContent.height - widget.height
-    local expectedWidgetHeight = self.widget.height - widget.height
+    for _, index in pairs(childrenToRemove) do
+        tremove(coreContent.children, index)
+    end
 
-    C_Timer.NewTicker(0.001,
+    local expectedWidgetHeight = max(currentPositionY + (expandedCapHeight * 2), (expandedCapHeight * 2))
+
+    if shrinkTimer and not shrinkTimer:IsCancelled() then
+        shrinkTimer:Cancel()
+    end
+
+    childCount = childCount - 1
+
+    shrinkTimer = C_Timer.NewTicker(0.001,
         function(ticker)
             -- Scale the widget
             if self.widget.height > expectedWidgetHeight then
-                self.widget.height = self.widget.height - 4
+                self.widget.height = self.widget.height - (4 * max(childCount, 1))
                 self.widget:SetHeight(max(self.widget.height, expectedWidgetHeight))
             end
 
-            -- Scale the content container
-            if coreContent.height > expectedHeight then
-                coreContent.height = coreContent.height - 4
-                coreContent:SetHeight(max(coreContent.height, expectedHeight))
-            end
-
-            if self.widget.height <= expectedWidgetHeight and coreContent.height <= expectedHeight then
+            if self.widget.height <= expectedWidgetHeight then
                 widget:Wipe()
                 ticker:Cancel()
             end
         end,
-        widget.height)
+        1000)
 
     if #coreContent.children == 0 then
         core:Dissolve()
@@ -243,7 +194,7 @@ function core:Create()
     ---@type PeninsulaBase
     local topContentCap = CreateFrame('Frame', nil, contentContainer)
     topContentCap:SetPoint('TOPLEFT', contentContainer, 'TOPLEFT')
-    topContentCap:SetPoint('BOTTOMRIGHT', contentContainer, 'TOPRIGHT', 0, -16)
+    topContentCap:SetPoint('BOTTOMRIGHT', contentContainer, 'TOPRIGHT', 0, -expandedCapHeight)
 
     topContentCap.bg = topContentCap:CreateTexture(nil, 'ARTWORK')
     topContentCap.bg:SetAllPoints(topContentCap)
@@ -259,7 +210,7 @@ function core:Create()
 
     ---@type PeninsulaBase
     local bottomContentCap = CreateFrame('Frame', nil, contentContainer)
-    bottomContentCap:SetPoint('TOPLEFT', contentContainer, 'BOTTOMLEFT', 0, 16)
+    bottomContentCap:SetPoint('TOPLEFT', contentContainer, 'BOTTOMLEFT', 0, expandedCapHeight)
     bottomContentCap:SetPoint('BOTTOMRIGHT')
 
     bottomContentCap.bg = bottomContentCap:CreateTexture(nil, 'ARTWORK')
@@ -281,8 +232,8 @@ function core:Create()
     base:SetPoint('BOTTOMRIGHT', -CORE_BASE_PADDING, CORE_BASE_PADDING * 2)
 
     local backgroundTex = contentContainer:CreateTexture(nil, 'ARTWORK')
-    backgroundTex:SetPoint('TOPLEFT', 0, -16)
-    backgroundTex:SetPoint('BOTTOMRIGHT', 0, 16)
+    backgroundTex:SetPoint('TOPLEFT', 0, -expandedCapHeight)
+    backgroundTex:SetPoint('BOTTOMRIGHT', 0, expandedCapHeight)
     backgroundTex:SetColorTexture(0, 0, 0, 0.75)
 
     base.children = {}

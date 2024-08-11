@@ -69,9 +69,38 @@ end
 
 ---@param content IslandContent
 function island.proto:SetDataContent(content)
-    self.widget.Content.Small = content.Small
-    self.widget.Content.Full = content.Full
-    self.widget.Content.OnClick = content.OnClick
+    self.widget.Content.widget:Hide()
+    self.widget.Content.widget:ClearAllPoints()
+    self.widget.Content.widget:SetParent(nil)
+
+    if self.widget.Content.Small ~= nil then
+        self.widget.Content.Small:Disconnect()
+        self.widget.Content.Small.widget:Hide()
+        self.widget.Content.Small.widget:ClearAllPoints()
+        self.widget.Content.Small.widget:SetParent(nil)
+    end
+
+    if self.widget.Content.Full ~= nil then
+        self.widget.Content.Full:Disconnect()
+        self.widget.Content.Full.widget:Hide()
+        self.widget.Content.Full.widget:ClearAllPoints()
+        self.widget.Content.Full.widget:SetParent(nil)
+    end
+
+    ---@type AnimatedFrame
+    local islandContent = CreateFrame('Frame', nil, self.widget)
+    islandContent:SetAllPoints(self.widget)
+
+    self.widget.Content = {
+        widget = islandContent,
+        Small = content.Small,
+        Full = content.Full,
+        OnClick = content.OnClick
+    }
+
+    -- self.widget.Content.Small = content.Small
+    -- self.widget.Content.Full = content.Full
+    -- self.widget.Content.OnClick = content.OnClick
 
     self:EnableIsland(ISLE_TYPE.SMALL)
 end

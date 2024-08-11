@@ -1,7 +1,10 @@
 local addonName = ...
+
+---@class DynamicArchipelago: AceAddon
 local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
+---@cast addon +AceConsole-3.0
+
 local LSM = LibStub("LibSharedMedia-3.0")
-local aceConsole = LibStub('AceConsole-3.0')
 
 ---@class Options: AceModule
 local options = addon:NewModule('Options')
@@ -206,12 +209,23 @@ function options:OnInitialize()
     LibStub("AceConfig-3.0"):RegisterOptionsTable(addonName, settings)
     self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(addonName, addonName)
 
-    aceConsole:RegisterChatCommand('da', 'SlashCommand')
-    aceConsole:RegisterChatCommand('dynamicarch', 'SlashCommand')
+    addon:RegisterChatCommand('da', 'SlashCommand')
+    addon:RegisterChatCommand('dynamicarchipelago', 'SlashCommand')
 end
 
-function aceConsole:SlashCommand(...)
-    _G['InterfaceOptionsFrame_OpenToCategory'](options.optionsFrame)
+---@param msg string
+function addon:SlashCommand(msg)
+    if msg == '' then
+        -- TODO: Open config
+        return
+    end
+
+    if msg == 'debug' then
+        ---@class Debug: AceModule
+        local debug = addon:GetModule('Debug')
+        debug:Enable()
+        debug:Show()
+    end
 end
 
 options:Enable()

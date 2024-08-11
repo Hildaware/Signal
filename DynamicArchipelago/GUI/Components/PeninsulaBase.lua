@@ -16,7 +16,7 @@ local database = addon:GetModule('Database')
 ---@class BasePeninsula
 penBase.baseProto = {}
 
-local padding = 8
+local padding = 4
 
 --#region Base Item Methods
 
@@ -28,6 +28,11 @@ end
 ---@return number
 function penBase.baseProto:GetIconWidth()
     return database:GetWidgetWidth() / 4
+end
+
+---@param width number
+function penBase.baseProto:SetIconWidth(width)
+    self.frame.icon:SetWidth(width)
 end
 
 ---@return number
@@ -60,10 +65,10 @@ end
 
 ---@param icon Frame
 function penBase.baseProto:SetIcon(icon)
+    self.frame.icon:SetPoint('BOTTOMRIGHT', self.frame.container, 'BOTTOMLEFT', icon:GetWidth() + padding, padding)
     icon:SetParent(self.frame.icon)
     icon:ClearAllPoints()
-    icon:SetPoint('TOPLEFT')
-    icon:SetPoint('BOTTOMRIGHT')
+    icon:SetPoint('CENTER', self.frame.icon, 'CENTER')
 end
 
 ---@param visibilityTime number
@@ -77,6 +82,25 @@ function penBase.baseProto:SetProgressBar(visibilityTime)
         duration = duration - elapsed
         bar:SetSmoothedValue(duration)
     end)
+end
+
+---@param callback function
+function penBase.baseProto:SetOnFinished(callback)
+    self.frame.animationOut:HookScript('OnFinished', function()
+        callback()
+    end)
+end
+
+---@param visibilityItem number
+function penBase.baseProto:UpdateDuration(visibilityItem)
+    if self.timer then
+        self.timer:Cancel()
+    end
+    self.timer = C_Timer.NewTimer(visibilityItem, function()
+        self.frame.animationOut:Play()
+    end)
+
+    self:SetProgressBar(visibilityItem)
 end
 
 function penBase.baseProto:Release()
@@ -120,7 +144,7 @@ function penBase:_DoCreate()
     i.child = nil
 
     local width = database:GetWidgetWidth()
-    local iconWidth = width / 4
+    local iconWidth = width / 4 -- TODO: dynamic?
 
     -- Create the Frame
     local frame = CreateFrame('Frame', nil, UIParent)
@@ -134,6 +158,8 @@ function penBase:_DoCreate()
     local content = CreateFrame('Frame', nil, frame)
     content:SetPoint('TOPLEFT', padding, -padding)
     content:SetPoint('BOTTOMRIGHT', -padding, padding)
+
+    i.frame.container = content
 
     local prog = CreateFrame('StatusBar', nil, content)
     prog:SetPoint('TOPLEFT', content, 'BOTTOMLEFT', 0, -2)
@@ -155,6 +181,11 @@ function penBase:_DoCreate()
     fade:SetFromAlpha(0.0)
     fade:SetToAlpha(1.0)
 
+    local scale = inAnim:CreateAnimation('Scale')
+    scale:SetDuration(0.5)
+    scale:SetScaleFrom(1.0, 0.0)
+    scale:SetScaleTo(1.0, 1.0)
+
     i.frame.animationIn = inAnim
 
     local outAnim = frame:CreateAnimationGroup()
@@ -175,18 +206,19 @@ function penBase:_DoCreate()
 
     local iconGroup = CreateFrame('Frame', nil, content)
     iconGroup:SetPoint('TOPLEFT', padding, -padding)
-    iconGroup:SetPoint('BOTTOMRIGHT', content, 'BOTTOMLEFT', iconWidth - padding, padding)
+    iconGroup:SetPoint('BOTTOMRIGHT', content, 'BOTTOMLEFT', iconWidth + padding, padding)
 
     i.frame.icon = iconGroup
 
     local contentGroup = CreateFrame('Frame', nil, content)
-    contentGroup:SetPoint('TOPLEFT', iconGroup, 'TOPRIGHT', padding, -padding)
+    contentGroup:SetPoint('TOPLEFT', iconGroup, 'TOPRIGHT', padding, 0)
     contentGroup:SetPoint('BOTTOMRIGHT', content, 'BOTTOMRIGHT', -padding, padding)
 
     i.frame.content = contentGroup
 
     local header = contentGroup:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlight')
     header:SetPoint('TOPLEFT')
+    header:SetJustifyV('TOP')
     header:SetText('HEADER')
     header:SetTextColor(0.5, 0.5, 1.0)
 
@@ -200,7 +232,7 @@ end
 function penBase:Create(visibilityTime)
     ---@type BasePeninsula
     local i = self._pool:Acquire()
-    C_Timer.NewTimer(visibilityTime, function()
+    i.timer = C_Timer.NewTimer(visibilityTime, function()
         i.frame.animationOut:Play()
     end)
 

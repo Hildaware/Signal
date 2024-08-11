@@ -57,6 +57,7 @@ function CreateColorFromRGBHexString(hex) end
 --#region Peninsulas
 
 ---@class BaseArchipelagoFrame : Frame
+---@field container Frame
 ---@field header FontString
 ---@field icon Frame
 ---@field content Frame
@@ -68,10 +69,12 @@ function CreateColorFromRGBHexString(hex) end
 ---@field id string
 ---@field frame BaseArchipelagoFrame
 ---@field child DynamicArchipelagoItem
+---@field timer? FunctionContainer
 ---@field SetHeader function
 ---@field SetType function
 ---@field SetContent function
 ---@field SetIcon function
+---@field SetOnFinished? function
 ---@field GetHeaderHeight function
 ---@field height number
 ---@field GetIconWidth function

@@ -8,7 +8,7 @@ local database = addon:NewModule('Database')
 local defaults = {
     global = {
         Settings = {
-            WidgetWidth = 512,
+            WidgetWidth = 312,
             VisibilityTimes = {
                 Chat = 5.0
             },

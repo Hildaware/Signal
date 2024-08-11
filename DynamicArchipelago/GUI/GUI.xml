@@ -2,4 +2,5 @@
     <Include file = 'Isle.lua' />
     <Include file = 'Peninsula.lua' />
     <Include file = 'Archipelago.lua' />
+    <Include file = 'Debug.lua' />
 </UI>
