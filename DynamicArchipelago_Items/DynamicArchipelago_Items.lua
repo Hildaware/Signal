@@ -58,10 +58,6 @@ itemFrame.collection = {}
 ---@field item ItemCompact?
 itemFrame.compactData = {}
 
-itemFrame.options = {
-    Compact = false
-}
-
 ---#endregion
 
 --#region CompactItem
@@ -156,8 +152,6 @@ end
 ---@param value boolean
 function database:SetCompactItems(value)
     database.internal.global.Items.Compact = value
-    itemFrame.options.Compact = value
-    -- Re-up!
 end
 
 ---@return boolean
@@ -177,7 +171,86 @@ function database:GetDurationByRarity(rarity)
     return database.internal.global.Items[rarity]
 end
 
+function database:SetDisableAlertFrame(value)
+    database.internal.global.Items.DisableAlertFrame = value
+
+    if value then
+        hooksecurefunc(AlertFrame, "RegisterEvent", function(_, event)
+            AlertFrame:UnregisterEvent(event)
+        end)
+        AlertFrame:UnregisterAllEvents()
+    end
+end
+
+function database:GetDisableAlertFrame()
+    return database.internal.global.Items.DisableAlertFrame
+end
+
 --#endregion
+
+function itemFrame:InitializeOptions()
+    ---@param str string
+    ---@param rarity Enum.ItemQuality
+    ---@return AceConfig.OptionsTable
+    local function RarityOptions(str, rarity)
+        local config = {
+            name = str,
+            type = 'range',
+            min = 0,
+            max = 30,
+            order = rarity + 5,
+            get = function() return database:GetDurationByRarity(rarity) end,
+            set = function(_, val) database:SetDurationByRarity(rarity, val) end
+        }
+
+        return config
+    end
+
+    --- Options
+    ---@type AceConfig.OptionsTable
+    local itemOptions = {
+        name = 'Item Options',
+        type = 'group',
+        order = 1,
+        args = {
+            style = {
+                name = 'Enable Compact Mode',
+                desc = 'Enables a smaller version for item popups. This does not include Currency and Reputation.',
+                type = 'toggle',
+                order = 1,
+                get = function() return database:GetCompactItemsMode() end,
+                set = function(_, val) database:SetCompactItems(val) end
+            },
+            disableAlerts = {
+                name = 'Disable Blizzard Alerts',
+                desc = 'Removes the default Item Alerts that popup.',
+                type = 'toggle',
+                order = 2,
+                get = function() return database:GetDisableAlertFrame() end,
+                set = function(_, val) database:SetDisableAlertFrame(val) end
+            },
+            header = {
+                name = 'Duration Settings',
+                type = 'header',
+                order = 3
+            },
+            info = {
+                name = 'Set the duration based on Item Quality. 0 will disable the item from showing.',
+                type = 'description',
+                order = 4
+            }
+        }
+    }
+
+    itemOptions.args['Poor'] = RarityOptions('Poor', Enum.ItemQuality.Poor)
+
+    for quality, rarity in pairs(Enum.ItemQuality) do
+        if rarity == Enum.ItemQuality.WoWToken then break end
+        itemOptions.args[tostring(quality)] = RarityOptions(tostring(quality), rarity)
+    end
+
+    options:AddSettings('itemOptions', itemOptions)
+end
 
 function itemFrame:OnInitialize()
     -- Register Events
@@ -206,65 +279,13 @@ function itemFrame:OnInitialize()
 
     self.collection = {}
 
-    ---@param str string
-    ---@param rarity Enum.ItemQuality
-    ---@return AceConfig.OptionsTable
-    local function RarityOptions(str, rarity)
-        local config = {
-            name = str,
-            type = 'range',
-            min = 0,
-            max = 30,
-            order = rarity + 4,
-            get = function() return database:GetDurationByRarity(rarity) end,
-            set = function(_, val) database:SetDurationByRarity(rarity, val) end
-        }
-
-        return config
-    end
-
-    --- Options
-    ---@type AceConfig.OptionsTable
-    local itemOptions = {
-        name = 'Item Options',
-        type = 'group',
-        order = 1,
-        args = {
-            style = {
-                name = 'Enable Compact Mode',
-                desc = 'Enables a smaller version for item popups. This does not include Currency and Reputation.',
-                type = 'toggle',
-                order = 1,
-                get = function() return database:GetCompactItemsMode() end,
-                set = function(_, val) database:SetCompactItems(val) end
-            },
-            header = {
-                name = 'Duration Settings',
-                type = 'header',
-                order = 2
-            },
-            info = {
-                name = 'Set the duration based on Item Quality. 0 will disable the item from showing.',
-                type = 'description',
-                order = 3
-            }
-        }
-    }
-
-    itemOptions.args['Poor'] = RarityOptions('Poor', Enum.ItemQuality.Poor)
-
-    for quality, rarity in pairs(Enum.ItemQuality) do
-        if rarity == Enum.ItemQuality.WoWToken then break end
-        itemOptions.args[tostring(quality)] = RarityOptions(tostring(quality), rarity)
-    end
-
-    options:AddSettings('itemOptions', itemOptions)
-
+    self:InitializeOptions()
 
     -- Database Defaults
     if database.internal.global.Items == nil then
         database.internal.global.Items = {
             Compact = false,
+            DisableAlertFrame = true,
             [Enum.ItemQuality.Poor] = 5,
             [Enum.ItemQuality.Common] = 5,
             [Enum.ItemQuality.Uncommon] = 8,
@@ -278,7 +299,12 @@ function itemFrame:OnInitialize()
         }
     end
 
-    self.options.Compact = database:GetCompactItemsMode()
+    if database.internal.global.Items.DisableAlertFrame then
+        hooksecurefunc(AlertFrame, "RegisterEvent", function(_, event)
+            AlertFrame:UnregisterEvent(event)
+        end)
+        AlertFrame:UnregisterAllEvents()
+    end
 end
 
 ---@param eventType integer
@@ -294,7 +320,7 @@ function itemFrame:OnEvent(eventType, ...)
     elseif eventType == ITEM_EVENTS.CHAT_MSG_COMBAT_FACTION_CHANGE then
         itemData = itemUtils:Parse_CHAT_MSG_COMBAT_FACTION_CHANGE(...)
     elseif eventType == 99 then -- Debug
-        itemData = itemUtils:Parse_GetItemData('item:' .. select(2, ...), 1)
+        itemData = itemUtils:GetItemData(select(2, ...), 1)
     end
 
     if itemData == nil then return end
@@ -307,7 +333,7 @@ function itemFrame:OnEvent(eventType, ...)
     if duration == 0 then return end
 
     -- Currency & Faction will always be full size
-    if itemType == ItemType.Currency or itemType == ItemType.Faction or not self.options.Compact then
+    if itemType == ItemType.Currency or itemType == ItemType.Faction or not database:GetCompactItemsMode() then
         -- If the item already exists, we want to extend the duraction
         if self.collection[itemData.id] then
             local widget = self.collection[itemData.id]
@@ -337,14 +363,13 @@ function itemFrame:OnEvent(eventType, ...)
         local viewTime = eventType == 99 and 60 or database:GetDurationByRarity(itemData.rarity)
         local widget = baseFrame:Create(viewTime)
 
-        local type = itemType == ItemType.Faction and 'Reputation'
-            or itemType == ItemType.Currency and 'Currency'
-            or Type
-        -- widget:SetType(type)
-
         local item = itemFrame:Create()
-        -- item:SetIcon(itemData.icon)
         item.icon = self:CreateIcon(itemData)
+
+        if itemType == ItemType.Faction or itemType == ItemType.Currency then
+            local type = itemType == ItemType.Faction and 'Reputation' or 'Currency'
+            widget:SetType(type)
+        end
 
         item:SetMessage(itemUtils:FormatItemString(itemData))
 
@@ -534,26 +559,28 @@ end
 
 ---@param item ItemData
 function itemFrame:CreateIcon(item)
-    -- local iconFrame = CreateFrame('ItemButton', nil, UIParent, 'ContainerFrameItemButtonTemplate')
     local iconFrame = CreateFrame('Frame', nil, UIParent)
     iconFrame:SetWidth(ITEM_DEFAULT_HEIGHT - 16)
     iconFrame:SetHeight(ITEM_DEFAULT_HEIGHT - 16)
     iconFrame:Hide()
 
-    -- SetItemButtonQuality(iconFrame, item.rarity, item.link, false, false)
-    -- SetItemButtonCount(iconFrame, item.stacks)
-    -- ClearItemButtonOverlay(iconFrame)
-    -- iconFrame:SetItemButtonTexture(item.icon)
-    -- iconFrame:UpdateNewItem(false)
-    -- iconFrame:UpdateQuestItem(false, nil, nil)
-    -- SetItemButtonDesaturated(iconFrame, false)
-    -- iconFrame:UpdateExtended()
-    -- iconFrame:EnableMouse(false)
-    -- iconFrame:CheckUpdateTooltip(iconFrame)
-
     local iconTex = iconFrame:CreateTexture(nil, 'BACKGROUND')
     iconTex:SetAllPoints(iconFrame)
     iconTex:SetTexture(item.icon)
+
+    local iconBorder = iconFrame:CreateTexture(nil, 'OVERLAY')
+    iconBorder:SetAllPoints(iconFrame)
+    iconBorder:SetTexture('Interface\\FriendsFrame\\WowShareTextures')
+    iconBorder:SetAtlas('WoWShare-ItemQualityBorder')
+
+    local r, g, b = C_Item.GetItemQualityColor(item.rarity)
+    iconBorder:SetVertexColor(r, g, b, 1.0)
+
+    if item.isQuest then
+        local questTexture = iconFrame:CreateTexture(nil, 'OVERLAY')
+        questTexture:SetAllPoints(iconFrame)
+        questTexture:SetTexture(TEXTURE_ITEM_QUEST_BANG)
+    end
 
     iconFrame:SetScript('OnEnter', function()
         GameTooltip:SetOwner(iconFrame, 'ANCHOR_TOPRIGHT')

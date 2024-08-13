@@ -26,6 +26,7 @@ ItemType = {
 ---@field ilvl? number
 ---@field isGear? boolean
 ---@field pQuality? string
+---@field isQuest? boolean
 ---@field factionData? FactionData
 
 ---@class FactionData
@@ -51,7 +52,11 @@ Enum.ItemQuality.Currency = 99
 function utils:FormatItemString(data)
     local message = ''
     if data.stacks > 1 then
-        message = tostring(data.stacks) .. 'x '
+        if data.itemType == ItemType.Faction then
+            message = '+' .. tostring(data.stacks) .. ' '
+        else
+            message = tostring(data.stacks) .. 'x '
+        end
     end
     message = message .. data.link
     if data.total > 1 then
@@ -59,7 +64,24 @@ function utils:FormatItemString(data)
         message = message .. ' (' .. totalCount .. 'x)'
     end
 
-    if data.itemType == ItemType.Faction and data.factionData ~= nil then
+    -- Item Tertiaries
+    if data.itemType == ItemType.Item and data.isGear then
+        message = message .. '\n'
+        if data.ilvl then
+            message = message .. 'i' .. data.ilvl
+        end
+
+        if data.tertiary then
+            message = message .. ' |cFF00FFFF' .. data.tertiary .. '|r'
+        end
+
+        if data.sock then
+            message = message .. ' ' .. data.sock
+        end
+    end
+
+    -- Reputation
+    if data.itemType == ItemType.Faction and data.factionData ~= nil and data.factionData.amountMessage ~= '' then
         message = message .. ' (' .. data.factionData.amountMessage .. ')'
     end
 
@@ -86,45 +108,34 @@ function utils:GetItemData(itemStr, stacks)
     local sockText = " ";
 
     if itemStats then
-        local socket = false
-
         if itemStats["EMPTY_SOCKET_META"] then
             for i = 1, itemStats["EMPTY_SOCKET_META"] do
                 sockText = sockText .. "|T136257:0|t";
             end
-            socket = true;
         end
 
         if itemStats["EMPTY_SOCKET_RED"] then
             for i = 1, itemStats["EMPTY_SOCKET_RED"] do
                 sockText = sockText .. "|T136258:0|t";
             end
-            socket = true;
         end
 
         if itemStats["EMPTY_SOCKET_YELLOW"] then
             for i = 1, itemStats["EMPTY_SOCKET_YELLOW"] do
                 sockText = sockText .. "|T136259:0|t";
             end
-            socket = true;
         end
 
         if itemStats["EMPTY_SOCKET_BLUE"] then
             for i = 1, itemStats["EMPTY_SOCKET_BLUE"] do
                 sockText = sockText .. "|T136256:0|t";
             end
-            socket = true;
         end
 
         if itemStats["EMPTY_SOCKET_PRISMATIC"] then
             for i = 1, itemStats["EMPTY_SOCKET_PRISMATIC"] do
                 sockText = sockText .. "|T458977:0|t";
             end
-            socket = true;
-        end
-
-        if socket then
-            sockText = sockText .. "|cFFFF00FFSocket|r";
         end
     end
 
@@ -151,6 +162,7 @@ function utils:GetItemData(itemStr, stacks)
         ilvl = realItemLevel or nil,
         isGear = isGear or false,
         pQuality = (pQuality and CreateAtlasMarkup('professions-icon-quality-tier' .. pQuality .. '-inv', 32, 32)) or nil,
+        isQuest = isQuest or nil,
         total = totalCount
     }
 
