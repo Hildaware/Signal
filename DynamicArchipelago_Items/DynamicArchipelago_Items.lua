@@ -2,11 +2,16 @@
 local addon = LibStub('AceAddon-3.0'):GetAddon('DynamicArchipelago')
 local Type = 'Item'
 
+local Masque = LibStub('Masque', true)
+
 ---@class ItemFrame: AceModule
 local itemFrame = addon:NewModule('ItemFrame')
 
----@class Utils: AceModule
-local utils = addon:GetModule('Utils')
+---@class ItemUtils: AceModule
+local itemUtils = addon:GetModule('ItemUtils')
+
+---@class FrameHelpers: AceModule
+local helpers = addon:GetModule('FrameHelpers')
 
 ---@class Events: AceModule
 local events = addon:GetModule('Events')
@@ -14,10 +19,13 @@ local events = addon:GetModule('Events')
 ---@class Database: AceModule
 local database = addon:GetModule('Database')
 
+---@class Options: AceModule
+local options = addon:GetModule('Options')
+
 ---@class PeninsulaBase: AceModule
 local baseFrame = addon:GetModule('PeninsulaBase')
 
-ITEM_EVENTS = {
+local ITEM_EVENTS = {
     CHAT_MSG_LOOT = 1,
     CHAT_MSG_COMBAT_FACTION_CHANGE = 2,
     CHAT_MSG_CURRENCY = 3,
@@ -28,269 +36,79 @@ local ITEM_DEFAULT_HEIGHT = 50
 
 --#region Types
 
----@class ItemData
----@field time integer
----@field id number
----@field stacks number
----@field name string
----@field icon string
----@field price number
----@field rarity number
----@field link string
----@field total number
----@field tertiary string
----@field sock string
----@field ilvl number
----@field isGear boolean
----@field pQuality string
----@field factionTotal? string
----@field isFaction? boolean
----@field isCurrency? boolean
-
----@class ItemContent : Frame
----@field itemType FontString
----@field message FontString
-
----@class ItemIcon : Frame
----@field texture Texture
-
 ---@class (exact) Item : DynamicArchipelagoItem
 ---@field content ItemContent
 ---@field icon ItemIcon
 ---@field data ItemData
 itemFrame.itemProto = {}
 
+---@class CompactItemContent : Frame
+---@field children Frame[]
+
+---@class (exact) ItemCompact : DynamicArchipelagoItem
+---@field content CompactItemContent
+---@field data ItemData
+itemFrame.compactItemProto = {}
+
 ---@type table<integer, BasePeninsula>
 itemFrame.collection = {}
 
+---@class ItemCompactData
+---@field widget BasePeninsula?
+---@field item ItemCompact?
+itemFrame.compactData = {}
+
+itemFrame.options = {
+    Compact = false
+}
+
 ---#endregion
 
---#region Private Methods
+--#region CompactItem
 
-local function GetDuration(type)
-    local dur = 1 -- TODO: Make this configurable
-    return dur
+---@param icon Frame
+function itemFrame.compactItemProto:AddIcon(icon)
+    local iconCount = #self.content.children
+    local widgetWidth = database:GetWidgetWidth()
+    local frameWidth = icon:GetWidth()
+    local padding = 8
+    local itemsPerRow = floor(widgetWidth / (frameWidth + padding))
+    local row = floor(iconCount / itemsPerRow)
+
+    icon:SetParent(self.content)
+
+    local xPos = ((iconCount % itemsPerRow) * frameWidth) + (padding * (iconCount % itemsPerRow))
+    local yPos = -(row * (frameWidth)) - (padding * row)
+
+    icon:SetPoint('TOPLEFT', self.content, 'TOPLEFT', xPos, yPos)
+
+    icon:Show()
+
+    self.content.children[iconCount + 1] = icon
 end
 
-local function IsGear(type)
-    return type == "Armor" or type == "Weapon"
+function itemFrame.compactItemProto:Wipe()
+    for _, child in ipairs(self.content.children) do
+        child:Hide()
+        child:SetParent(nil)
+        child:ClearAllPoints()
+    end
+
+    self.content:Hide()
+    self.content:SetParent(nil)
+    self.content:ClearAllPoints()
+    self.content.children = {}
+
+    self:CleanChatDataCompact()
 end
 
----@param data ItemData
-local function FormatMessage(data)
-    local message = ''
-    if data.stacks > 1 then
-        message = tostring(data.stacks) .. 'x '
-    end
-    message = message .. data.link
-    if data.total > 1 then
-        local totalCount = tostring(data.total + data.stacks)
-        message = message .. ' (' .. totalCount .. 'x)'
-    end
-    if data.factionTotal then
-        message = message .. ' (' .. data.factionTotal .. ')'
-    end
-    return message
-end
-
----@param itemStr string
----@param stacks number
----@return ItemData?
-local function GetItemData(itemStr, stacks)
-    local itemName, link, quality, level, minLevel, type, subType, stackCount,
-    _, texture, price = C_Item.GetItemInfo(itemStr)
-
-    if not link then return end
-
-    local pQuality = string.match(link, ".*:Professions%-ChatIcon%-Quality%-Tier(%d):?.*")
-    local isQuest = type == 'Quest'
-
-    local realItemLevel = C_Item.GetDetailedItemLevelInfo(link)
-    local itemStats = C_Item.GetItemStats(link)
-    local itemId = C_Item.GetItemIDForItemInfo(itemStr)
-    local isGear = IsGear(type)
-
-    local sockText = " ";
-
-    if itemStats then
-        local socket = false
-
-        if itemStats["EMPTY_SOCKET_META"] then
-            for i = 1, itemStats["EMPTY_SOCKET_META"] do
-                sockText = sockText .. "|T136257:0|t";
-            end
-            socket = true;
-        end
-
-        if itemStats["EMPTY_SOCKET_RED"] then
-            for i = 1, itemStats["EMPTY_SOCKET_RED"] do
-                sockText = sockText .. "|T136258:0|t";
-            end
-            socket = true;
-        end
-
-        if itemStats["EMPTY_SOCKET_YELLOW"] then
-            for i = 1, itemStats["EMPTY_SOCKET_YELLOW"] do
-                sockText = sockText .. "|T136259:0|t";
-            end
-            socket = true;
-        end
-
-        if itemStats["EMPTY_SOCKET_BLUE"] then
-            for i = 1, itemStats["EMPTY_SOCKET_BLUE"] do
-                sockText = sockText .. "|T136256:0|t";
-            end
-            socket = true;
-        end
-
-        if itemStats["EMPTY_SOCKET_PRISMATIC"] then
-            for i = 1, itemStats["EMPTY_SOCKET_PRISMATIC"] do
-                sockText = sockText .. "|T458977:0|t";
-            end
-            socket = true;
-        end
-
-        if socket then
-            sockText = sockText .. "|cFFFF00FFSocket|r";
-        end
-    end
-
-    local tertiary
-    if itemStats["ITEM_MOD_CR_AVOIDANCE_SHORT"] then tertiary = " |cFF00FFFFAvoidance|r" end
-    if itemStats["ITEM_MOD_CR_LIFESTEAL_SHORT"] then tertiary = " |cFF00FFFFLeech|r" end
-    if itemStats["ITEM_MOD_CR_SPEED_SHORT"] then tertiary = " |cFF00FFFFSpeed|r" end
-    if itemStats["ITEM_MOD_CR_STURDINESS_SHORT"] then tertiary = " |cFF00FFFFIndestructible|r" end
-
-    local totalCount = C_Item.GetItemCount(link)
-
-    ---@type ItemData
-    local newItem = {
-        time = GetTime(),
-        id = itemId,
-        stacks = stacks,
-        name = itemName,
-        icon = texture,
-        price = price,
-        rarity = quality,
-        link = link,
-        tertiary = tertiary or nil,
-        sock = (sockText ~= " ") and sockText or nil,
-        ilvl = realItemLevel or nil,
-        isGear = isGear or false,
-        pQuality = (pQuality and CreateAtlasMarkup('professions-icon-quality-tier' .. pQuality .. '-inv', 32, 32)) or nil,
-        total = totalCount
-    }
-
-    return newItem
-end
-
----@param ... any
----@return ItemData?
-local function CHAT_MSG_CURRENCY(...)
-    local itemStr = select(2, ...)
-
-    if itemStr == nil then
-        return
-    end
-
-    local itemLink, count = string.match(itemStr, "(|c.+|r) ?x?(%d*).?")
-    if count == nil then
-        return
-    end
-
-    local info = C_CurrencyInfo.GetCurrencyInfoFromLink(itemLink)
-
-    local itemIcon = info.iconFileID
-    local text = info.name
-    if itemIcon and tonumber(count) ~= 0 then
-        -- Item Format
-
-        ---@type ItemData
-        local newItem = {
-            id = info.currencyID,
-            time = GetTime(),
-            stacks = tonumber(count),
-            name = info.name,
-            icon = info.iconFileID,
-            price = 0,
-            rarity = 6,
-            link = itemLink,
-            total = info.quantity,
-            isCurrency = true
-        }
-
-        return newItem
-    end
-end
-
----@param ... any
----@return ItemData?
-local function CHAT_MSG_LOOT(...)
-    local itemStr = select(2, ...)
-    local player = select(3, ...)
-
-    local name = UnitName('player')
-    local server = GetNormalizedRealmName()
-    local playerName = name .. '-' .. server
-
-    if player ~= playerName then return end
-
-    itemStr = itemStr:sub(itemStr:find(':') + 2, itemStr:len())
-    local stacks = string.match(itemStr, ".*x(%d*)(%.?)$")
-    local itemStacks = tonumber(stacks) or 1
-
-    return GetItemData(itemStr, itemStacks)
-end
-
----@param ... any
----@return ItemData?
-local function ENCOUNTER_LOOT_RECEIVED(...)
-    local _, itemID, text, itemStacks, playerName = ...
-    if not text then return end
-    if playerName ~= GetUnitName('player') then return end
-    return GetItemData(text, itemStacks)
-end
-
----@param ... any
----@return ItemData?
-local function CHAT_MSG_COMBAT_FACTION_CHANGE(...)
-    local text = select(2, ...)
-    if not text then return end
-
-    local faction = string.match(text, ".*with ([%a %-',%(%)%d:]+) increased by.*") or
-        string.match(text, ".*with ([%a %-',%(%)%d:]+) decreased by.*") or ""
-    local stacks = tonumber(string.match(text, ".*increased by (%d+)%.?")) or
-        (tonumber(string.match(text, ".*decreased by (%d+)%.?")) * -1) or 0
-
-    local id = 0
-    local factionTotal = ''
-    for factionIndex = 1, C_Reputation.GetNumFactions() do
-        local factionData = C_Reputation.GetFactionDataByIndex(factionIndex)
-        if factionData == nil then break end
-        if factionData.name == faction then
-            id = factionData.factionID
-            factionTotal = factionData.currentStanding .. ' / ' .. factionData.nextReactionThreshold
-            break
-        end
-    end
-
-    return {
-        time = GetTime(),
-        id = id,
-        stacks = stacks,
-        name = faction,
-        icon = 236681,
-        price = 0,
-        rarity = 7,
-        link = faction,
-        total = 0,
-        factionTotal = factionTotal,
-        isFaction = true
-    }
+function itemFrame.compactItemProto:CleanChatDataCompact()
+    -- TODO
 end
 
 --#endregion
 
+--#region Item
 
 ---@param iconId string
 function itemFrame.itemProto:SetIcon(iconId)
@@ -331,6 +149,36 @@ function itemFrame.itemProto:CleanChatData()
     -- TODO: Clear out content / icon data
 end
 
+--#endregion
+
+--#region Database
+
+---@param value boolean
+function database:SetCompactItems(value)
+    database.internal.global.Items.Compact = value
+    itemFrame.options.Compact = value
+    -- Re-up!
+end
+
+---@return boolean
+function database:GetCompactItemsMode()
+    return database.internal.global.Items.Compact
+end
+
+---@param rarity Enum.ItemQuality
+---@param val number
+function database:SetDurationByRarity(rarity, val)
+    database.internal.global.Items[rarity] = val
+end
+
+---@param rarity Enum.ItemQuality
+---@return number
+function database:GetDurationByRarity(rarity)
+    return database.internal.global.Items[rarity]
+end
+
+--#endregion
+
 function itemFrame:OnInitialize()
     -- Register Events
     events:RegisterEvent('CHAT_MSG_LOOT', function(...)
@@ -351,12 +199,272 @@ function itemFrame:OnInitialize()
         self._pool:SetResetDisallowedIfNew()
     end
 
+    self._compactPool = CreateObjectPool(self._DoCreateCompact, self._DoResetCompact)
+    if self._compactPool.SetResetDisallowedIfNew then
+        self._compactPool:SetResetDisallowedIfNew()
+    end
+
     self.collection = {}
+
+    ---@param str string
+    ---@param rarity Enum.ItemQuality
+    ---@return AceConfig.OptionsTable
+    local function RarityOptions(str, rarity)
+        local config = {
+            name = str,
+            type = 'range',
+            min = 0,
+            max = 30,
+            order = rarity + 4,
+            get = function() return database:GetDurationByRarity(rarity) end,
+            set = function(_, val) database:SetDurationByRarity(rarity, val) end
+        }
+
+        return config
+    end
+
+    --- Options
+    ---@type AceConfig.OptionsTable
+    local itemOptions = {
+        name = 'Item Options',
+        type = 'group',
+        order = 1,
+        args = {
+            style = {
+                name = 'Enable Compact Mode',
+                desc = 'Enables a smaller version for item popups. This does not include Currency and Reputation.',
+                type = 'toggle',
+                order = 1,
+                get = function() return database:GetCompactItemsMode() end,
+                set = function(_, val) database:SetCompactItems(val) end
+            },
+            header = {
+                name = 'Duration Settings',
+                type = 'header',
+                order = 2
+            },
+            info = {
+                name = 'Set the duration based on Item Quality. 0 will disable the item from showing.',
+                type = 'description',
+                order = 3
+            }
+        }
+    }
+
+    itemOptions.args['Poor'] = RarityOptions('Poor', Enum.ItemQuality.Poor)
+
+    for quality, rarity in pairs(Enum.ItemQuality) do
+        if rarity == Enum.ItemQuality.WoWToken then break end
+        itemOptions.args[tostring(quality)] = RarityOptions(tostring(quality), rarity)
+    end
+
+    options:AddSettings('itemOptions', itemOptions)
+
+
+    -- Database Defaults
+    if database.internal.global.Items == nil then
+        database.internal.global.Items = {
+            Compact = false,
+            [Enum.ItemQuality.Poor] = 5,
+            [Enum.ItemQuality.Common] = 5,
+            [Enum.ItemQuality.Uncommon] = 8,
+            [Enum.ItemQuality.Rare] = 11,
+            [Enum.ItemQuality.Epic] = 14,
+            [Enum.ItemQuality.Legendary] = 17,
+            [Enum.ItemQuality.Artifact] = 20,
+            [Enum.ItemQuality.Heirloom] = 23,
+            [Enum.ItemQuality.Reputation] = 10,
+            [Enum.ItemQuality.Currency] = 8
+        }
+    end
+
+    self.options.Compact = database:GetCompactItemsMode()
 end
 
----@param item ChatItem
-function itemFrame:_DoReset(item)
-    item:CleanChatData()
+---@param eventType integer
+---@param ... any
+function itemFrame:OnEvent(eventType, ...)
+    local itemData = nil
+    if eventType == ITEM_EVENTS.CHAT_MSG_CURRENCY then
+        itemData = itemUtils:Parse_CHAT_MSG_CURRENCY(...)
+    elseif eventType == ITEM_EVENTS.CHAT_MSG_LOOT then
+        itemData = itemUtils:Parse_CHAT_MSG_LOOT(...)
+    elseif eventType == ITEM_EVENTS.ENCOUNTER_LOOT_RECEIVED then
+        itemData = itemUtils:Parse_ENCOUNTER_LOOT_RECEIVED(...)
+    elseif eventType == ITEM_EVENTS.CHAT_MSG_COMBAT_FACTION_CHANGE then
+        itemData = itemUtils:Parse_CHAT_MSG_COMBAT_FACTION_CHANGE(...)
+    elseif eventType == 99 then -- Debug
+        itemData = itemUtils:Parse_GetItemData('item:' .. select(2, ...), 1)
+    end
+
+    if itemData == nil then return end
+
+    local time = GetTime()
+
+    local itemType = itemData.itemType
+
+    local duration = database:GetDurationByRarity(itemData.rarity)
+    if duration == 0 then return end
+
+    -- Currency & Faction will always be full size
+    if itemType == ItemType.Currency or itemType == ItemType.Faction or not self.options.Compact then
+        -- If the item already exists, we want to extend the duraction
+        if self.collection[itemData.id] then
+            local widget = self.collection[itemData.id]
+
+            if itemData.total == widget.data.total and not itemType == ItemType.Faction then
+                return
+            end
+
+            widget.data.time = time
+            widget.data.stacks = widget.data.stacks + itemData.stacks
+            widget.data.total = itemData.total
+
+            if itemData.itemType == ItemType.Faction and itemData.factionData ~= nil then
+                widget.data.factionData = itemData.factionData
+            end
+
+            itemData.total = itemData.total - itemData.stacks
+            itemData.stacks = widget.data.stacks
+
+            widget:UpdateDuration(database:GetVisibilityTimeByType(Type)) -- TODO: TYPE
+            widget.child:SetMessage(itemUtils:FormatItemString(itemData))
+
+            return
+        end
+
+        -- Create a new Item
+        local viewTime = eventType == 99 and 60 or database:GetDurationByRarity(itemData.rarity)
+        local widget = baseFrame:Create(viewTime)
+
+        local type = itemType == ItemType.Faction and 'Reputation'
+            or itemType == ItemType.Currency and 'Currency'
+            or Type
+        -- widget:SetType(type)
+
+        local item = itemFrame:Create()
+        -- item:SetIcon(itemData.icon)
+        item.icon = self:CreateIcon(itemData)
+
+        item:SetMessage(itemUtils:FormatItemString(itemData))
+
+        widget:SetIcon(item.icon)
+        widget:SetContent(item.content)
+        widget:SetOnFinished(function()
+            self.collection[itemData.id] = nil
+        end)
+
+        widget:SetChild(item)
+
+        -- height
+        local height = widget:GetHeaderHeight()
+        height = height + item.content.message:GetHeight()
+        -- height = height + item.content.itemType:GetHeight()
+
+        widget.height = max(ITEM_DEFAULT_HEIGHT, height)
+
+        item.content:Show()
+        item.icon:Show()
+
+        ---@type ItemData
+        widget.data = {
+            type = Type,
+            time = time,
+            rarity = itemData.rarity,
+            icon = itemData.icon,
+            link = itemData.link,
+            name = itemData.name,
+            itemType = itemType,
+            id = itemData.id,
+            stacks = itemData.stacks,
+            total = itemData.total,
+            tertiary = itemData.tertiary,
+            sock = itemData.sock,
+            ilvl = itemData.ilvl,
+            isGear = itemData.isGear,
+            pQuality = itemData.pQuality,
+            factionData = itemData.factionData,
+        }
+
+        self.collection[itemData.id] = widget
+
+        events:SendMessage('DYNAMIC_ARCHIPELAGO_ADD_CORE_ITEM', widget)
+
+        return
+    end
+
+    -- Compact Mode
+    if self.compactData.item == nil or self.compactData.widget == nil then
+        local viewTime = eventType == 99 and 60 or database:GetVisibilityTimeByType(Type)
+        local widget = baseFrame:Create(viewTime)
+        -- widget:SetType(Type .. 's')
+
+        widget.frame.icon:SetPoint('BOTTOMRIGHT', widget.frame.container, 'BOTTOMLEFT', 0, 0)
+
+        local item = itemFrame:CreateCompact()
+
+        local itemIcon = self:CreateIcon(itemData)
+        item:AddIcon(itemIcon)
+
+        widget:SetContent(item.content)
+        widget:SetOnFinished(function()
+            self.compactData = {}
+        end)
+
+        widget:SetChild(item)
+
+        local height = widget:GetHeaderHeight()
+        height = height + item.content:GetHeight()
+
+        widget.height = max(ITEM_DEFAULT_HEIGHT, height)
+
+        item.content:Show()
+
+        self.compactData = {
+            widget = widget,
+            item = item
+        }
+
+        events:SendMessage('DYNAMIC_ARCHIPELAGO_ADD_CORE_ITEM', widget)
+    else
+        local widget = self.compactData.widget
+        local item = self.compactData.item
+        if widget == nil or item == nil then return end
+
+        local itemIcon = self:CreateIcon(itemData)
+        item:AddIcon(itemIcon)
+
+        local height = widget:GetHeaderHeight()
+
+        local iconCount = #item.content.children - 1
+        local widgetWidth = database:GetWidgetWidth()
+        local frameWidth = itemIcon:GetWidth()
+        local padding = 8
+        local itemsPerRow = floor(widgetWidth / (frameWidth + padding))
+        local row = floor(iconCount / itemsPerRow)
+
+        local itemHeight = (row + 1) * ITEM_DEFAULT_HEIGHT
+        item.content:SetHeight(itemHeight)
+
+        height = height + itemHeight
+
+        widget.height = max(ITEM_DEFAULT_HEIGHT, height)
+
+        widget:UpdateDuration(database:GetVisibilityTimeByType(Type))
+        widget:UpdateHeight()
+
+        events:SendMessage('DYNAMIC_ARCHIPELAGO_UPDATE_CORE_ITEM', widget)
+    end
+end
+
+---@return Item
+function itemFrame:Create()
+    return self._pool:Acquire()
+end
+
+---@return ItemCompact
+function itemFrame:CreateCompact()
+    return self._compactPool:Acquire()
 end
 
 ---@return Item
@@ -379,11 +487,11 @@ function itemFrame:_DoCreate()
     contentFrame:SetHeight(ITEM_DEFAULT_HEIGHT)
     contentFrame:Hide()
 
-    local message = contentFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormalSmall')
+    local message = contentFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormal')
     message:SetText('MESSAGE')
     message:SetWordWrap(true)
     message:SetJustifyH('LEFT')
-    message:SetJustifyV('TOP')
+    message:SetJustifyV('MIDDLE')
     message:SetPoint('TOPLEFT')
     message:SetPoint('BOTTOMRIGHT')
 
@@ -396,115 +504,72 @@ function itemFrame:_DoCreate()
     return i
 end
 
----@return Item
-function itemFrame:Create()
-    return self._pool:Acquire()
+---@return ItemCompact
+function itemFrame:_DoCreateCompact()
+    ---@type ItemCompact
+    local i = setmetatable({}, { __index = itemFrame.compactItemProto })
+
+    local baseWidth = baseFrame.baseProto:GetWidgetWidth()
+
+    local contentFrame = CreateFrame('Frame', nil, UIParent)
+    contentFrame:SetWidth(baseWidth)
+    contentFrame:SetHeight(ITEM_DEFAULT_HEIGHT)
+    contentFrame:Hide()
+
+    i.content = contentFrame
+    i.content.children = {}
+
+    return i
 end
 
----@param eventType integer
----@param ... any
-function itemFrame:OnEvent(eventType, ...)
-    local itemData = nil
-    if eventType == ITEM_EVENTS.CHAT_MSG_CURRENCY then
-        itemData = CHAT_MSG_CURRENCY(...)
-    elseif eventType == ITEM_EVENTS.CHAT_MSG_LOOT then
-        itemData = CHAT_MSG_LOOT(...)
-    elseif eventType == ITEM_EVENTS.ENCOUNTER_LOOT_RECEIVED then
-        itemData = ENCOUNTER_LOOT_RECEIVED(...)
-    elseif eventType == ITEM_EVENTS.CHAT_MSG_COMBAT_FACTION_CHANGE then
-        itemData = CHAT_MSG_COMBAT_FACTION_CHANGE(...)
-    elseif eventType == 99 then -- Debug
-        itemData = GetItemData('item:6948', 1)
-    end
+---@param item Item
+function itemFrame:_DoReset(item)
+    item:CleanChatData()
+end
 
-    if itemData == nil then return end
+---@param item ItemCompact
+function itemFrame:_DoResetCompact(item)
+    item:CleanChatDataCompact()
+end
 
-    local time = GetTime()
+---@param item ItemData
+function itemFrame:CreateIcon(item)
+    -- local iconFrame = CreateFrame('ItemButton', nil, UIParent, 'ContainerFrameItemButtonTemplate')
+    local iconFrame = CreateFrame('Frame', nil, UIParent)
+    iconFrame:SetWidth(ITEM_DEFAULT_HEIGHT - 16)
+    iconFrame:SetHeight(ITEM_DEFAULT_HEIGHT - 16)
+    iconFrame:Hide()
 
-    -- Does this exist? If so, extend and break
-    if self.collection[itemData.id] then
-        local widget = self.collection[itemData.id]
+    -- SetItemButtonQuality(iconFrame, item.rarity, item.link, false, false)
+    -- SetItemButtonCount(iconFrame, item.stacks)
+    -- ClearItemButtonOverlay(iconFrame)
+    -- iconFrame:SetItemButtonTexture(item.icon)
+    -- iconFrame:UpdateNewItem(false)
+    -- iconFrame:UpdateQuestItem(false, nil, nil)
+    -- SetItemButtonDesaturated(iconFrame, false)
+    -- iconFrame:UpdateExtended()
+    -- iconFrame:EnableMouse(false)
+    -- iconFrame:CheckUpdateTooltip(iconFrame)
 
-        if itemData.total == widget.data.total and not itemData.isFaction == true then
-            return
-        end
+    local iconTex = iconFrame:CreateTexture(nil, 'BACKGROUND')
+    iconTex:SetAllPoints(iconFrame)
+    iconTex:SetTexture(item.icon)
 
-        widget.data.time = time
-        widget.data.stacks = widget.data.stacks + itemData.stacks
-        widget.data.total = itemData.total
-
-        if itemData.factionTotal and itemData.isFaction == true then
-            widget.data.factionTotal = itemData.factionTotal
-        end
-
-        itemData.total = itemData.total - itemData.stacks
-        itemData.stacks = widget.data.stacks
-
-        widget:UpdateDuration(database:GetVisibilityTimeByType(Type))
-        widget.child:SetMessage(FormatMessage(itemData))
-        return
-    end
-
-    local viewTime = eventType == 99 and 60 or database:GetVisibilityTimeByType(Type)
-    local widget = baseFrame:Create(viewTime)
-
-    local type = itemData.isFaction == true and 'Reputation' or itemData.isCurrency == true and 'Currency' or Type
-    widget:SetType(type)
-
-    -- print('Stacks:', itemData.stacks) -- Count Received
-    -- print('Name:', itemData.name)
-    -- print('Icon:', itemData.icon)
-    -- print('Price:', itemData.price) -- Sell Price
-    -- print('Rarity:', itemData.rarity)
-    -- print('Link:', itemData.link)
-    -- print('Total:', itemData.total) -- How many in bags
-    -- print('Tertiary:', itemData.tertiary)
-    -- print('Sock:', itemData.sock)
-    -- print('ilvl:', itemData.ilvl)
-    -- print('isGear:', itemData.isGear)
-    -- print('pQuality:', itemData.pQuality)
-
-    local item = itemFrame:Create()
-    item:SetIcon(itemData.icon)
-
-    item:SetMessage(FormatMessage(itemData))
-
-    widget:SetIcon(item.icon)
-    widget:SetContent(item.content)
-    widget:SetOnFinished(function()
-        self.collection[itemData.id] = nil
+    iconFrame:SetScript('OnEnter', function()
+        GameTooltip:SetOwner(iconFrame, 'ANCHOR_TOPRIGHT')
+        GameTooltip:SetHyperlink(item.link)
+        GameTooltip:Show()
     end)
 
-    widget:SetChild(item)
+    iconFrame:SetScript('OnLeave', function()
+        GameTooltip:Hide()
+    end)
 
-    -- height
-    local height = widget:GetHeaderHeight()
-    height = height + item.content.message:GetHeight()
-    -- height = height + item.content.itemType:GetHeight()
+    if Masque then
+        helpers:ApplyMasqueGroup(iconFrame)
+    end
 
-    widget.height = max(ITEM_DEFAULT_HEIGHT, height)
-
-    item.content:Show()
-    item.icon:Show()
-
-    widget.data = {
-        time = time,
-        link = itemData.link,
-        name = itemData.name,
-        type = eventType,
-        id = itemData.id,
-        stacks = itemData.stacks,
-        total = itemData.total,
-        tertiary = itemData.tertiary,
-        sock = itemData.sock,
-        ilvl = itemData.ilvl,
-        isGear = itemData.isGear,
-        pQuality = itemData.pQuality,
-    }
-
-    self.collection[itemData.id] = widget
-
-    events:SendMessage('DYNAMIC_ARCHIPELAGO_ADD_CORE_ITEM', widget)
+    return iconFrame
 end
 
 itemFrame:Enable()

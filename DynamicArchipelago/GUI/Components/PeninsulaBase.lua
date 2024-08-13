@@ -103,6 +103,14 @@ function penBase.baseProto:UpdateDuration(visibilityItem)
     self:SetProgressBar(visibilityItem)
 end
 
+function penBase.baseProto:UpdateHeight()
+    self.frame:SetHeight(self.height)
+end
+
+function penBase.baseProto:GetHeight()
+    return self.frame:GetHeight()
+end
+
 function penBase.baseProto:Release()
     penBase._pool:Release(self)
 end
@@ -219,7 +227,6 @@ function penBase:_DoCreate()
     local header = contentGroup:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlight')
     header:SetPoint('TOPLEFT')
     header:SetJustifyV('TOP')
-    header:SetText('HEADER')
     header:SetTextColor(0.5, 0.5, 1.0)
 
     i.frame.header = header

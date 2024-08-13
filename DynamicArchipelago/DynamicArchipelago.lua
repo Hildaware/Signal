@@ -7,6 +7,9 @@ local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 ---@class Database: AceModule
 local database = addon:GetModule('Database')
 
+---@class Options: AceModule
+local options = addon:GetModule('Options')
+
 ---@class DynamicArchipelagoStatus
 ---@field isReady boolean
 addon.status = {
@@ -21,7 +24,7 @@ function addon:OnCompartmentClick(context)
         if IsShiftKeyDown() then
             print('Shift')
         else
-            -- _G['InterfaceOptionsFrame_OpenToCategory'](options.optionsFrame)
+            LibStub("AceConfigDialog-3.0"):Open(addonName)
         end
     end
 end

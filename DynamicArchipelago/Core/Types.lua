@@ -79,6 +79,7 @@ function CreateColorFromRGBHexString(hex) end
 ---@field height number
 ---@field GetIconWidth function
 ---@field GetWidgetWidth function
+---@field GetHeight function
 
 ---@class PeninsulaWidget : Frame
 ---@field Base PeninsulaWidgetContent

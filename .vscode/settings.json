@@ -59,7 +59,11 @@
         "OPTIONS",
         "CHAT_MSG_LOOT",
         "GetClassAtlas",
-        "xx"
+        "xx",
+        "SetItemButtonQuality",
+        "SetItemButtonCount",
+        "ClearItemButtonOverlay",
+        "SetItemButtonDesaturated"
     ],
     "Lua.diagnostics.disable": [
         "duplicate-set-field",

@@ -9,4 +9,5 @@
 ## DefaultState: enabled
 ## X-Curse-Project-ID: TODO
 
+ItemUtils.lua
 DynamicArchipelago_Items.lua

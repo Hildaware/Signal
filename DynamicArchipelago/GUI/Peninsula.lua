@@ -241,7 +241,6 @@ function core:Create()
     contentContainer.Base = base
     contentContainer.Base.height = 0
 
-
     contentContainer:Hide()
 
     contentContainer.Base.height = base:GetHeight()
@@ -277,10 +276,21 @@ function core:Precipitate()
     self.data.isMaximized = true
 end
 
+---@param widget BasePeninsula
+function core:UpdateHeight(widget)
+    self.data.widget.height = (expandedCapHeight * 2) + widget.height
+    self.data.widget:SetHeight((expandedCapHeight * 2) + widget.height)
+end
+
 ---@param widget DynamicArchipelagoItem
 function events:DYNAMIC_ARCHIPELAGO_ADD_CORE_ITEM(_, widget)
     core:Precipitate()
     core.data:AddChild(widget)
+end
+
+---@param widget BasePeninsula
+function events:DYNAMIC_ARCHIPELAGO_UPDATE_CORE_ITEM(_, widget)
+    core:UpdateHeight(widget)
 end
 
 ---@param widget BasePeninsula
