@@ -40,7 +40,7 @@ function arch:Create()
 
     local frame = CreateFrame('Frame', 'DynamicArchipelago', UIParent)
     frame:SetPoint(position.point, UIParent, position.relativePoint, position.x, position.y)
-    frame:SetSize(width, 300)
+    frame:SetSize(width, 64)
 
     frame:SetScript('OnDragStart', function(f, button)
         if button == 'LeftButton' then
@@ -78,17 +78,20 @@ function arch:Create()
 
     self.data.widget = frame
 
+    local growUp = database:GetNotificationGrowth()
+    local growthPoint = growUp and 'BOTTOM' or 'TOP'
+
     local coreIsland = island:Create()
     coreIsland.widget:ClearAllPoints()
     coreIsland.widget:SetParent(frame)
-    coreIsland.widget:SetPoint('TOP')
+    coreIsland.widget:SetPoint(growthPoint, frame, growthPoint, 0, 0)
 
     self.data.island = coreIsland
 
     local coreContent = core:Create()
     coreContent.widget:ClearAllPoints()
     coreContent.widget:SetParent(frame)
-    coreContent.widget:SetPoint('TOP')
+    coreContent.widget:SetPoint(growthPoint, frame, growthPoint, 0, 0)
     coreContent.widget:SetSize(0, 0)
 
     self.data.core = coreContent
@@ -123,6 +126,18 @@ end
 
 function events:DYNAMIC_ARCHIPELAGO_CORE_END()
     arch.data.island:FadeIn()
+end
+
+function events:DYNAMIC_ARCHIPELAGO_UPDATE_CONFIG()
+    -- Update specific things that are adjusted!
+    local growUp = database:GetNotificationGrowth()
+    local growthPoint = growUp and 'BOTTOM' or 'TOP'
+
+    arch.data.island.widget:ClearAllPoints()
+    arch.data.island.widget:SetPoint(growthPoint, arch.data.widget, growthPoint, 0, 0)
+
+    arch.data.core.widget:ClearAllPoints()
+    arch.data.core.widget:SetPoint(growthPoint, arch.data.widget, growthPoint, 0, 0)
 end
 
 arch:Enable()

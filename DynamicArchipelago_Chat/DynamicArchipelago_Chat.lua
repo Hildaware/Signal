@@ -18,11 +18,24 @@ local database = addon:GetModule('Database')
 ---@class PeninsulaBase: AceModule
 local baseFrame = addon:GetModule('PeninsulaBase')
 
-CHAT_TYPE = {
+local CHAT_TYPE = {
     WHISPER = 1,
     PARTY = 2,
     INSTANCE = 3,
-    RAID = 4
+    RAID = 4,
+    BNET = 5,
+}
+
+local MESSAGE_EVENTS = {
+    ['CHAT_MSG_WHISPER'] = CHAT_TYPE.WHISPER,
+    ['CHAT_MSG_BN_WHISPER'] = CHAT_TYPE.BNET,
+    ['CHAT_MSG_PARTY_LEADER'] = CHAT_TYPE.PARTY,
+    ['CHAT_MSG_PARTY'] = CHAT_TYPE.PARTY,
+    ['CHAT_MSG_INSTANCE_CHAT_LEADER'] = CHAT_TYPE.INSTANCE,
+    ['CHAT_MSG_INSTANCE_CHAT'] = CHAT_TYPE.INSTANCE,
+    ['CHAT_MSG_RAID'] = CHAT_TYPE.RAID,
+    ['CHAT_MSG_RAID_LEADER'] = CHAT_TYPE.RAID,
+    ['CHAT_MSG_RAID_WARNING'] = CHAT_TYPE.RAID,
 }
 
 local ITEM_DEFAULT_HEIGHT = 90
@@ -71,6 +84,9 @@ local function GetChatTypeColored(chatType)
     if chatType == CHAT_TYPE.RAID then
         return '|cffff6060RAID|r'
     end
+    if chatType == CHAT_TYPE.BNET then
+        return '|cff00AEFFBNET|r'
+    end
 
     return 'CHANNEL'
 end
@@ -89,11 +105,6 @@ function chatFrame.chatProto:SetPortrait(playerId, class)
         else
             self.icon.texture:SetTexture(texture)
         end
-        -- TODO: Class? That doesn't exist
-        -- local texture = "Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES"
-        -- local coords = CLASS_ICON_TCOORDS[class]
-        -- self.icon.texture:SetTexture(texture)
-        -- self.icon.texture:SetTexCoord(table.unpack(coords))
     end
 end
 
@@ -133,31 +144,11 @@ function chatFrame.chatProto:CleanChatData()
 end
 
 function chatFrame:OnInitialize()
-    -- Register Events
-    events:RegisterEvent('CHAT_MSG_WHISPER', function(...)
-        self:OnEvent(CHAT_TYPE.WHISPER, ...)
-    end)
-    events:RegisterEvent('CHAT_MSG_PARTY_LEADER', function(...)
-        self:OnEvent(CHAT_TYPE.PARTY, ...)
-    end)
-    events:RegisterEvent('CHAT_MSG_PARTY', function(...)
-        self:OnEvent(CHAT_TYPE.PARTY, ...)
-    end)
-    events:RegisterEvent('CHAT_MSG_INSTANCE_CHAT_LEADER', function(...)
-        self:OnEvent(CHAT_TYPE.INSTANCE, ...)
-    end)
-    events:RegisterEvent('CHAT_MSG_INSTANCE_CHAT', function(...)
-        self:OnEvent(CHAT_TYPE.INSTANCE, ...)
-    end)
-    events:RegisterEvent('CHAT_MSG_RAID', function(...)
-        self:OnEvent(CHAT_TYPE.RAID, ...)
-    end)
-    events:RegisterEvent('CHAT_MSG_RAID_LEADER', function(...)
-        self:OnEvent(CHAT_TYPE.RAID, ...)
-    end)
-    events:RegisterEvent('CHAT_MSG_RAID_WARNING', function(...)
-        self:OnEvent(CHAT_TYPE.RAID, ...)
-    end)
+    for event, chatType in pairs(MESSAGE_EVENTS) do
+        events:RegisterEvent(event, function(...)
+            self:OnEvent(chatType, ...)
+        end)
+    end
 
     self._pool = CreateObjectPool(self._DoCreate, self._DoReset)
     if self._pool.SetResetDisallowedIfNew then
@@ -233,19 +224,30 @@ end
 function chatFrame:OnEvent(chatType, ...)
     local _, message, name, _, _, _, _, _, _, _, _, _, playerId = ...
     local time = GetTime()
-    -- if playerId == nil or playerId == UnitGUID('player') then return end
 
-    local locClass, engClass, locRace, engRace, gender, className, server = GetPlayerInfoByGUID(playerId)
-    if engClass == nil or engClass == '' then return end
+    local playerClass = ''
+    if chatType ~= CHAT_TYPE.BNET then
+        if playerId == nil or playerId == UnitGUID('player') then return end
+        local _, engClass, _, _, _, _, _ = GetPlayerInfoByGUID(playerId)
+        if engClass == nil or engClass == '' then return end
+        playerClass = engClass
+    end
 
     local viewTime = string.len(message) * 0.10
     local widget = baseFrame:Create(viewTime)
     widget:SetType(Type)
 
-    local formattedName = '|c' .. utils:GetClassColor(engClass) .. name .. '|r'
+    local formattedName = '|c' .. chatType ~= CHAT_TYPE.BNET and utils:GetClassColor(playerClass) or
+        'FF00AEFF' .. name .. '|r'
 
     local chatItem = chatFrame:Create()
-    chatItem:SetPortrait(playerId, engClass)
+
+    if chatType == CHAT_TYPE.BNET then
+        chatItem.icon.texture:SetAtlas('')   -- BNET atlas
+        chatItem.icon.texture:SetTexture('') -- BNET icon
+    else
+        chatItem:SetPortrait(playerId, playerClass)
+    end
     chatItem:SetIconLabel(string.sub(formattedName, 1, 24))
 
     chatItem:SetChatType(chatType)
@@ -266,7 +268,7 @@ function chatFrame:OnEvent(chatType, ...)
         time = time,
         playerId = playerId,
         name = name,
-        class = engClass,
+        class = playerClass,
         type = chatType,
         message = message,
     }

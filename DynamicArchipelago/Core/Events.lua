@@ -7,6 +7,7 @@ local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 local events = addon:NewModule('Events', 'AceEvent-3.0')
 
 local eventMessages = {
+    'DYNAMIC_ARCHIPELAGO_UPDATE_CONFIG',
     'DYNAMIC_ARCHIPELAGO_ADD_CORE_ITEM',
     'DYNAMIC_ARCHIPELAGO_ITEM_TIMER_END',
     'DYNAMIC_ARCHIPELAGO_UPDATE_CORE_ITEM',

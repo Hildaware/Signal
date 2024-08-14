@@ -98,10 +98,6 @@ function island.proto:SetDataContent(content)
         OnClick = content.OnClick
     }
 
-    -- self.widget.Content.Small = content.Small
-    -- self.widget.Content.Full = content.Full
-    -- self.widget.Content.OnClick = content.OnClick
-
     self:EnableIsland(ISLE_TYPE.SMALL)
 end
 

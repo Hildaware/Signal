@@ -49,72 +49,44 @@ function anim:FadeIn(frame, alphaModifier)
 end
 
 ---@param frame Frame
----@param expectedHeight number?
----@param expectedWidth number?
----@param heightGrowthModifier number?
+---@param expectedWidth number
 ---@param widthGrowthModifier number?
 ---@return boolean
-function anim:Grow(frame, expectedHeight, expectedWidth, heightGrowthModifier, widthGrowthModifier)
-    heightGrowthModifier = heightGrowthModifier or 4
+function anim:GrowHorizontal(frame, expectedWidth, widthGrowthModifier)
     widthGrowthModifier = widthGrowthModifier or 4
 
-    local currentHeight = frame:GetHeight(true)
-    local currentWidth = frame:GetWidth(true)
+    local currentWidth = frame:GetWidth()
 
-    if (expectedWidth and currentWidth >= expectedWidth) and (expectedHeight and currentHeight >= expectedHeight) then
+    if expectedWidth and currentWidth >= expectedWidth then
         frame:SetWidth(expectedWidth)
-        frame:SetHeight(expectedHeight)
         return true
     end
 
-    if expectedHeight ~= nil then
-        if currentHeight < expectedHeight then
-            local newHeight = currentHeight + heightGrowthModifier
-            frame:SetHeight(min(newHeight, expectedHeight))
-        end
-    end
-
-    if expectedWidth ~= nil then
-        if currentWidth < expectedWidth then
-            local newWidth = currentWidth + widthGrowthModifier
-            frame:SetWidth(min(newWidth, expectedWidth))
-        end
+    if currentWidth < expectedWidth then
+        local newWidth = currentWidth + widthGrowthModifier
+        frame:SetWidth(min(newWidth, expectedWidth))
     end
 
     return false
 end
 
 ---@param frame Frame
----@param expectedHeight number?
----@param expectedWidth number?
----@param heightRegressionModifier number?
+---@param expectedWidth number
 ---@param widthRegressionModifier number?
 ---@return boolean
-function anim:Shrink(frame, expectedHeight, expectedWidth, heightRegressionModifier, widthRegressionModifier)
-    heightRegressionModifier = heightRegressionModifier or 4
+function anim:ShrinkHorizontal(frame, expectedWidth, widthRegressionModifier)
     widthRegressionModifier = widthRegressionModifier or 4
 
-    local currentHeight = frame:GetHeight(true)
-    local currentWidth = frame:GetWidth(true)
+    local currentWidth = frame:GetWidth()
 
-    if (expectedWidth and currentWidth <= expectedWidth) and (expectedHeight and currentHeight <= expectedHeight) then
+    if expectedWidth and currentWidth <= expectedWidth then
         frame:SetWidth(expectedWidth)
-        frame:SetHeight(expectedHeight)
         return true
     end
 
-    if expectedHeight ~= nil then
-        if currentHeight > expectedHeight then
-            local newHeight = currentHeight - heightRegressionModifier
-            frame:SetHeight(max(newHeight, expectedHeight))
-        end
-    end
-
-    if expectedWidth ~= nil then
-        if currentWidth > expectedWidth then
-            local newWidth = currentWidth - widthRegressionModifier
-            frame:SetWidth(max(newWidth, expectedWidth))
-        end
+    if currentWidth > expectedWidth then
+        local newWidth = currentWidth - widthRegressionModifier
+        frame:SetWidth(max(newWidth, expectedWidth))
     end
 
     return false

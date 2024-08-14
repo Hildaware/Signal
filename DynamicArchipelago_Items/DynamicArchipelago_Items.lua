@@ -211,7 +211,7 @@ function itemFrame:InitializeOptions()
     local itemOptions = {
         name = 'Item Options',
         type = 'group',
-        order = 1,
+        order = 2,
         args = {
             style = {
                 name = 'Enable Compact Mode',
@@ -360,7 +360,7 @@ function itemFrame:OnEvent(eventType, ...)
         end
 
         -- Create a new Item
-        local viewTime = eventType == 99 and 60 or database:GetDurationByRarity(itemData.rarity)
+        local viewTime = eventType == 99 and 3 or database:GetDurationByRarity(itemData.rarity)
         local widget = baseFrame:Create(viewTime)
 
         local item = itemFrame:Create()

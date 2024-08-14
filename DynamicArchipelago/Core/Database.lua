@@ -4,11 +4,14 @@ local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 ---@class Database: AceModule
 local database = addon:NewModule('Database')
 
+---@class Events: AceModule
+local events = addon:GetModule('Events')
+
 ---@class databaseOptions
 local defaults = {
     global = {
         Settings = {
-            WidgetWidth = 312,
+            WidgetWidth = 256,
             VisibilityTimes = {
                 Chat = 5.0
             },
@@ -19,7 +22,8 @@ local defaults = {
                 x = 0,
                 y = 0
             },
-            Locked = true
+            Locked = true,
+            NotificationGrowth = false
         }
     }
 }
@@ -52,6 +56,11 @@ function database:GetVisibilityTimeByType(type)
     return database.internal.global.Settings.VisibilityTimes[type] or 5.0
 end
 
+---@return boolean
+function database:GetNotificationGrowth()
+    return database.internal.global.Settings.NotificationGrowth
+end
+
 --#endregion
 
 --#region Sets
@@ -79,6 +88,12 @@ end
 ---@param position number
 function database:SetWidgetPositionY(position)
     database.internal.global.Settings.Position.y = position
+end
+
+---@param value boolean
+function database:SetNotificationGrowth(value)
+    database.internal.global.Settings.NotificationGrowth = value
+    events:SendMessage('DYNAMIC_ARCHIPELAGO_UPDATE_CONFIG')
 end
 
 --#endregion

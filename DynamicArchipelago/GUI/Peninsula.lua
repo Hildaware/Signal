@@ -38,11 +38,10 @@ local shrinkTimer = nil
 --#region Core Methods
 
 function core.widget:GrowAnimation()
+    local expectedWidth = database:GetWidgetWidth()
     C_Timer.NewTicker(0.001,
         function(ticker)
-            local expectedWidth = database:GetWidgetWidth()
-
-            if animations:Grow(self, nil, expectedWidth, nil, 12) then
+            if animations:GrowHorizontal(self, expectedWidth, 8) then
                 ticker:Cancel()
             end
         end,
@@ -50,11 +49,10 @@ function core.widget:GrowAnimation()
 end
 
 function core.widget:ShrinkAnimation()
+    local expectedWidth = ISLE_SMALL_WIDTH
     C_Timer.NewTicker(0.001,
         function(ticker)
-            local expectedWidth = ISLE_SMALL_WIDTH
-
-            if animations:Shrink(self, nil, expectedWidth, nil, 12) then
+            if animations:ShrinkHorizontal(self, expectedWidth, 8) then
                 ticker:Cancel()
             end
         end,
@@ -74,10 +72,13 @@ function core.proto:AddChild(widget)
         expectedPositionY = expectedPositionY + childWidget.height
     end
 
+    local growUp = database:GetNotificationGrowth()
+    local point = growUp and 'BOTTOMLEFT' or 'TOPLEFT'
+    local offsetY = growUp and expectedPositionY + 1 or -(expectedPositionY + 1)
     if childCount == 0 then
-        widget.frame:SetPoint('TOPLEFT', coreContent)
+        widget.frame:SetPoint(point, coreContent, point, 0, 0)
     else
-        widget.frame:SetPoint('TOPLEFT', coreContent, 'TOPLEFT', 0, -(expectedPositionY + 1))
+        widget.frame:SetPoint(point, coreContent, point, 0, offsetY)
     end
 
     coreContent.children[childCount + 1] = widget
@@ -121,6 +122,9 @@ function core.proto:RemoveChild(widget)
     local coreContent = self.widget.Base
     local childCount = #coreContent.children
 
+    local growthDirection = database:GetNotificationGrowth()
+    local growthPoint = growthDirection and 'BOTTOMLEFT' or 'TOPLEFT'
+
     local currentPositionY = 0
     local previousChildHeight = 0
     local childrenToRemove = {}
@@ -130,8 +134,8 @@ function core.proto:RemoveChild(widget)
             previousChildHeight = child.height
             tinsert(childrenToRemove, index)
         else
-            local point, relativeTo, relativePoint, offsetX, offsetY = child.frame:GetPointByName('TOPLEFT')
-            local newPos = offsetY + previousChildHeight
+            local point, relativeTo, relativePoint, offsetX, offsetY = child.frame:GetPointByName(growthPoint)
+            local newPos = growthDirection and offsetY - previousChildHeight or offsetY + previousChildHeight
             currentPositionY = currentPositionY + child.height
             child.frame:SetPoint(point, relativeTo, relativePoint, offsetX, newPos)
         end
@@ -173,15 +177,10 @@ end
 
 function core:OnInitialize()
     self.data = setmetatable({}, { __index = core.proto })
-    self:Create()
 end
 
 ---@return PeninsulaCore
 function core:Create()
-    local position = database:GetWidgetPosition()
-    local width = database:GetWidgetWidth()
-    local isLocked = database:GetWidgetState()
-
     self.data.items = {}
     self.data.itemData = {}
 

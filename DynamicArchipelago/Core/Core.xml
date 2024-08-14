@@ -1,13 +1,13 @@
 <UI xmlns='http://www.blizzard.com/wow/ui/'   xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'   xsi:schemaLocation='http://www.blizzard.com/wow/ui/'>
     <Include file = 'Init.lua' />
     <Include file = 'DataTypes.lua' />
+    <Include file = 'Events.lua' />
     <Include file = 'Database.lua' />
     <Include file = 'Enums.lua' />
     <Include file = 'Resolver.lua' />
     <Include file = 'Session.lua' />
     <Include file = 'Utils.lua' />
     <Include file = 'Maps.lua' />
-    <Include file = 'Events.lua' />
     <Include file = 'Options.lua' />
     <Include file = 'Animations.lua' />
     <Include file = 'FrameHelpers.lua' />

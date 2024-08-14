@@ -21,11 +21,7 @@ function addon:OnCompartmentClick(context)
     if button == 'RightButton' then
         database:SetWidgetState(not database:GetWidgetState())
     else
-        if IsShiftKeyDown() then
-            print('Shift')
-        else
-            LibStub("AceConfigDialog-3.0"):Open(addonName)
-        end
+        LibStub("AceConfigDialog-3.0"):Open(addonName)
     end
 end
 
@@ -41,7 +37,6 @@ function addon:OnInitialize()
             GameTooltip:AddLine("Dynamic Archipelago")
             GameTooltip:AddLine("|cffeda55fClick|r |cFFFFFFFFto open the options configuration.|r")
             GameTooltip:AddLine("|cffeda55fRight-Click|r |cFFFFFFFFto move the addon.|r")
-            GameTooltip:AddLine("|cffeda55fShift-Click|r |cFFFFFFFFto open the Stats window.|r")
             GameTooltip:Show()
         end,
         funcOnLeave = function()

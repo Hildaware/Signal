@@ -17,7 +17,23 @@ local optionsFrame
 ---@class AceConfig.OptionsTable
 local settings = {
     type = 'group',
-    args = {}
+    args = {
+        baseOptions = {
+            name = 'Configuration',
+            type = 'group',
+            order = 1,
+            args = {
+                growth = {
+                    name = 'Grow Up',
+                    desc = 'When enabled, notifications will grow up instead of down.',
+                    type = 'toggle',
+                    order = 1,
+                    get = function() return database:GetNotificationGrowth() end,
+                    set = function(_, value) database:SetNotificationGrowth(value) end
+                }
+            }
+        }
+    }
 }
 
 function options:OnInitialize()
