@@ -21,6 +21,12 @@ ISLE_TYPE = {
     FULL = 2
 }
 
+---@enum PeninsulaStyle
+PENINSULA_STYLE = {
+    HORIZONTAL = 1,
+    VERTICAL = 2
+}
+
 MAX_PLAYER_LEVEL_BY_EXPANSION = {
     [0] = 60, -- Classic
     [1] = 60, -- BC

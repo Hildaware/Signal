@@ -59,6 +59,7 @@ local ITEM_DEFAULT_HEIGHT = 90
 ---@field label FontString
 
 ---@class (exact) ChatItem : DynamicArchipelagoItem
+---@field container Frame
 ---@field content ChatContent
 ---@field icon ChatIcon
 ---@field SetPortrait function
@@ -167,15 +168,24 @@ function chatFrame:_DoCreate()
 
     local baseWidth = baseFrame.baseProto:GetWidgetWidth()
 
-    local iconFrame = CreateFrame('Frame', nil, UIParent)
-    iconFrame:SetWidth(ITEM_DEFAULT_HEIGHT - 12)
-    iconFrame:SetHeight(ITEM_DEFAULT_HEIGHT - 12)
+    local container = CreateFrame('Frame', nil, UIParent)
+    container:SetWidth(baseWidth)
+    container:SetHeight(ITEM_DEFAULT_HEIGHT)
+
+    local chatType = container:CreateFontString(nil, 'BACKGROUND', 'GameFontNormal')
+    chatType:SetText('CHAT TYPE')
+    chatType:SetPoint('TOPLEFT')
+
+    local iconFrame = CreateFrame('Frame', nil, container)
+    iconFrame:SetPoint('TOPLEFT', chatType, 'BOTTOMLEFT', 0, -4)
+    iconFrame:SetWidth(baseWidth)
+    iconFrame:SetHeight(40)
     iconFrame:Hide()
 
     local bgTex = iconFrame:CreateTexture()
-    bgTex:SetPoint('TOP', iconFrame, 'TOP', 0, -2)
-    bgTex:SetWidth(ITEM_DEFAULT_HEIGHT - 32)
-    bgTex:SetHeight(ITEM_DEFAULT_HEIGHT - 32)
+    bgTex:SetPoint('TOPLEFT', iconFrame, 'TOPLEFT', 0, -2)
+    bgTex:SetWidth(40)
+    bgTex:SetHeight(40)
     bgTex:SetTexture(utils:GetMediaDir() .. 'Art\\box')
     bgTex:SetVertexColor(0, 0, 0, 0.65)
 
@@ -186,24 +196,22 @@ function chatFrame:_DoCreate()
     local iconLabel = iconFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormalTiny')
     iconLabel:SetText('Player Name')
     iconLabel:SetJustifyH('CENTER')
-    iconLabel:SetPoint('TOP', iconTex, 'BOTTOM', 0, -4)
+    iconLabel:SetPoint('LEFT', iconTex, 'RIGHT', 4, 0)
 
-    local contentFrame = CreateFrame('Frame', nil, UIParent)
-    contentFrame:SetWidth(baseWidth - ITEM_DEFAULT_HEIGHT)
+    local contentFrame = CreateFrame('Frame', nil, container)
+    contentFrame:SetPoint('TOPLEFT', iconFrame, 'BOTTOMLEFT', 0, -4)
+    contentFrame:SetWidth(baseWidth)
     contentFrame:SetHeight(ITEM_DEFAULT_HEIGHT)
     contentFrame:Hide()
-
-    local chatType = contentFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormal')
-    chatType:SetText('CHAT TYPE')
-    chatType:SetPoint('TOPLEFT')
 
     local message = contentFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormalSmall')
     message:SetText('MESSAGE.')
     message:SetWordWrap(true)
     message:SetJustifyH('LEFT')
     message:SetJustifyV('MIDDLE')
-    message:SetPoint('TOPLEFT', chatType, 'BOTTOMLEFT')
-    message:SetPoint('BOTTOMRIGHT')
+    message:SetAllPoints(contentFrame)
+
+    i.container = container
 
     i.content = contentFrame
     i.content.chatType = chatType
@@ -233,12 +241,13 @@ function chatFrame:OnEvent(chatType, ...)
         playerClass = engClass
     end
 
-    local viewTime = string.len(message) * 0.10
+    local viewTime = max(string.len(message) * 0.10, 10)
     local widget = baseFrame:Create(viewTime)
+    widget:WithoutIcon()
     widget:SetType(Type)
 
-    local formattedName = '|c' .. chatType ~= CHAT_TYPE.BNET and utils:GetClassColor(playerClass) or
-        'FF00AEFF' .. name .. '|r'
+    local formattedName = '|c' .. (chatType ~= CHAT_TYPE.BNET and utils:GetClassColor(playerClass) or
+        'FF00AEFF') .. name .. '|r'
 
     local chatItem = chatFrame:Create()
 
@@ -248,18 +257,16 @@ function chatFrame:OnEvent(chatType, ...)
     else
         chatItem:SetPortrait(playerId, playerClass)
     end
-    chatItem:SetIconLabel(string.sub(formattedName, 1, 24))
+    chatItem:SetIconLabel(formattedName)
 
     chatItem:SetChatType(chatType)
     chatItem:SetMessage(message)
 
-    widget:SetIcon(chatItem.icon)
-
-    local chatHeight = max(string.len(message) * 1.1, ITEM_DEFAULT_HEIGHT)
+    local chatHeight = max(string.len(message) * 1.1, 45)
     chatItem.content:SetHeight(chatHeight)
-    widget:SetContent(chatItem.content)
+    widget:SetContent(chatItem.container)
 
-    widget.height = max(ITEM_DEFAULT_HEIGHT, chatHeight)
+    widget.height = max(ITEM_DEFAULT_HEIGHT, chatHeight) + 44
 
     chatItem.content:Show()
     chatItem.icon:Show()

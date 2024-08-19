@@ -49,6 +49,27 @@ function penBase.baseProto:SetHeader(str)
     self.frame.header:SetText(str)
 end
 
+---@param style PeninsulaStyle
+function penBase.baseProto:SetStyle(style)
+    local iconWidth = database:GetWidgetWidth() / 4
+    self.frame.icon:ClearAllPoints()
+    self.frame.content:ClearAllPoints()
+
+    if style == PENINSULA_STYLE.HORIZONTAL then
+        self.frame.icon:SetPoint('TOPLEFT', padding, -padding)
+        self.frame.icon:SetPoint('BOTTOMRIGHT', self.frame.container, 'BOTTOMLEFT', iconWidth + padding, padding)
+
+        self.frame.content:SetPoint('TOPLEFT', self.frame.icon, 'TOPRIGHT', padding, 0)
+        self.frame.content:SetPoint('BOTTOMRIGHT', self.frame.container, 'BOTTOMRIGHT', -padding, padding)
+    else
+        self.frame.icon:SetPoint('TOPLEFT', padding, -padding)
+        self.frame.icon:SetPoint('BOTTOMRIGHT', self.frame.container, 'TOPRIGHT', -padding, -(iconWidth + padding))
+
+        self.frame.content:SetPoint('TOPLEFT', self.frame.icon, 'BOTTOMLEFT', 0, -padding)
+        self.frame.content:SetPoint('BOTTOMRIGHT', self.frame.container, 'BOTTOMRIGHT', -padding, padding)
+    end
+end
+
 ---@param str string
 function penBase.baseProto:SetType(str)
     self.frame.header:SetText(str .. ' - Just Now')
