@@ -20,6 +20,10 @@ local padding = 4
 
 --#region Base Item Methods
 
+function penBase.baseProto:WithoutIcon()
+    self.frame.icon:SetPoint('BOTTOMRIGHT', self.frame.container, 'BOTTOMLEFT', 0, 0)
+end
+
 ---@return number
 function penBase.baseProto:GetWidgetWidth()
     return database:GetWidgetWidth()

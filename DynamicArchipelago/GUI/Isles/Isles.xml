@@ -2,5 +2,6 @@
     <Include file = 'IsleBase.lua' />
     <Include file = 'Widgets/Experience.lua' />
     <Include file = 'Widgets/Location.lua' />
+    <Include file = 'Widgets/DungeonTimer.lua' />
     <Include file = 'IsleController.lua' />
 </UI>

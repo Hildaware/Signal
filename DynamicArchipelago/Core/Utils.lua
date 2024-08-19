@@ -58,6 +58,16 @@ function utils:GetReadableTime()
     return format("%02d:%02d:%02d", minutes, seconds, milliseconds)
 end
 
+---@param time number
+---@return string
+function utils:GetReadableTime(time)
+    local days = floor(time / 86400)
+    local hours = floor(mod(time, 86400) / 3600)
+    local minutes = floor(mod(time, 3600) / 60)
+    local seconds = floor(mod(time, 60))
+    return format("%d:%02d:%02d:%02d", days, hours, minutes, seconds)
+end
+
 ---@param engClass string
 ---@return string
 function utils:GetClassColor(engClass)

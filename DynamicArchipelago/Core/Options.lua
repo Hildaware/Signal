@@ -19,18 +19,45 @@ local settings = {
     type = 'group',
     args = {
         baseOptions = {
-            name = 'Configuration',
+            name = 'General Configuration',
             type = 'group',
             order = 1,
             args = {
+                isleOptions = {
+                    name = 'Isle Options',
+                    type = 'header',
+                    order = 1,
+                },
+                enable = {
+                    name = 'Enable',
+                    desc =
+                    "When disabled, the 'always on' pill will not be shown. Notification will still be shown as normal.",
+                    type = 'toggle',
+                    order = 2,
+                    get = function() return database:GetIsleEnabled() end,
+                    set = function(_, value) database:SetIsleEnabled(value) end
+                },
+                unlock = {
+                    name = 'Unlock',
+                    desc = 'Unlocks the frame so it can be freely moved.',
+                    type = 'toggle',
+                    order = 3,
+                    get = function() return not database:GetWidgetState() end,
+                    set = function() database:SetWidgetState(not database:GetWidgetState()) end
+                },
+                notificationOptions = {
+                    name = 'Notification Options',
+                    type = 'header',
+                    order = 4,
+                },
                 growth = {
-                    name = 'Grow Up',
+                    name = 'Growth Up',
                     desc = 'When enabled, notifications will grow up instead of down.',
                     type = 'toggle',
-                    order = 1,
+                    order = 5,
                     get = function() return database:GetNotificationGrowth() end,
                     set = function(_, value) database:SetNotificationGrowth(value) end
-                }
+                },
             }
         }
     }

@@ -7,7 +7,6 @@ local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 ---@class Debug: AceModule
 local debug = addon:NewModule('Debug')
 
-
 function debug:Show()
     ---@class ItemFrame: AceModule
     local itemFrame = addon:GetModule('ItemFrame')

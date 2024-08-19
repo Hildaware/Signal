@@ -11,6 +11,9 @@ local events = addon:GetModule('Events')
 local defaults = {
     global = {
         Settings = {
+            Enabled = true,
+            Locked = true,
+            NotificationGrowth = false,
             WidgetWidth = 256,
             VisibilityTimes = {
                 Chat = 5.0
@@ -22,8 +25,6 @@ local defaults = {
                 x = 0,
                 y = 0
             },
-            Locked = true,
-            NotificationGrowth = false
         }
     }
 }
@@ -34,6 +35,11 @@ function database:OnInitialize()
 end
 
 --#region Gets
+
+---@return boolean
+function database:GetIsleEnabled()
+    return database.internal.global.Settings.Enabled
+end
 
 ---@return boolean
 function database:GetWidgetState()
@@ -64,6 +70,11 @@ end
 --#endregion
 
 --#region Sets
+
+function database:SetIsleEnabled(value)
+    database.internal.global.Settings.Enabled = value
+    events:SendMessage('DYNAMIC_ARCHIPELAGO_UPDATE_CONFIG')
+end
 
 ---@param state boolean
 function database:SetWidgetState(state)

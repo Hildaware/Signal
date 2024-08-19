@@ -81,10 +81,13 @@ function arch:Create()
     local growUp = database:GetNotificationGrowth()
     local growthPoint = growUp and 'BOTTOM' or 'TOP'
 
+    local enabled = database:GetIsleEnabled()
+
     local coreIsland = island:Create()
     coreIsland.widget:ClearAllPoints()
     coreIsland.widget:SetParent(frame)
     coreIsland.widget:SetPoint(growthPoint, frame, growthPoint, 0, 0)
+    coreIsland.widget:SetAlpha(enabled and 1.0 or 0.0)
 
     self.data.island = coreIsland
 
@@ -96,8 +99,21 @@ function arch:Create()
 
     self.data.core = coreContent
 
+    -- TODO: Remove eventually!
+    local basicLocationWidget = {
+        widget = addon:GetModule('LocationWidget'),
+        id = 1,
+        event = 'ZONE_CHANGED_NEW_AREA',
+        fallbackWidget = true
+    }
+
+    events:SendMessage('DYNAMIC_ARCHIPELAGO_SET_ISLE_WIDGET', basicLocationWidget.widget)
+
     frame:Show()
-    self.data.island:FadeIn()
+
+    if enabled then
+        self.data.island:FadeIn()
+    end
 
     addon.status.isReady = true
 end
@@ -120,16 +136,21 @@ function arch:ToggleLockedState(state)
 end
 
 function events:DYNAMIC_ARCHIPELAGO_CORE_START()
-    if arch.data.core.widget:IsShown() then return end -- Shouldn't happend but whatev
+    if database:GetIsleEnabled() == false then return end
     arch.data.island:FadeOut()
 end
 
 function events:DYNAMIC_ARCHIPELAGO_CORE_END()
+    if database:GetIsleEnabled() == false then return end
     arch.data.island:FadeIn()
 end
 
 function events:DYNAMIC_ARCHIPELAGO_UPDATE_CONFIG()
     -- Update specific things that are adjusted!
+
+    local enabled = database:GetIsleEnabled()
+    arch.data.island.widget:SetAlpha(enabled and 1.0 or 0.0)
+
     local growUp = database:GetNotificationGrowth()
     local growthPoint = growUp and 'BOTTOM' or 'TOP'
 

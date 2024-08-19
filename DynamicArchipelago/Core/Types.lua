@@ -15,6 +15,52 @@ function GetQuestLogRewardXP(questId) end
 ---@return ColorMixin
 function CreateColorFromRGBHexString(hex) end
 
+--#region ObjectPoolMixin
+
+---@class ObjectPoolMixin
+local ObjectPoolMixin = {}
+
+---@param creationFunc function
+---@param resetterFunc? function
+---@return ObjectPoolMixin
+function CreateObjectPool(creationFunc, resetterFunc) end
+
+---@generic T
+---@return T
+function ObjectPoolMixin:Acquire() end
+
+---@generic T
+---@param widget T
+function ObjectPoolMixin:Release(widget) end
+
+function ObjectPoolMixin:ReleaseAll() end
+
+---@return number
+function ObjectPoolMixin:EnumerateActive() end
+
+---@return number
+function ObjectPoolMixin:EnumerateInactive() end
+
+---@generic T
+---@param current T
+---@return T
+function ObjectPoolMixin:GetNextActive(current) end
+
+---@generic T
+---@param current T
+---@return T
+function ObjectPoolMixin:GetNextInActive(current) end
+
+---@generic T
+---@param widget T
+---@return boolean
+function ObjectPoolMixin:IsActive(widget) end
+
+function ObjectPoolMixin:SetResetDisallowedIfNew() end
+
+--#endregion
+
+
 --#endregion
 
 --#region Internal
@@ -48,9 +94,12 @@ function CreateColorFromRGBHexString(hex) end
 
 ---@class AvailableWidget
 ---@field widget PeninsulaWidget
----@field priority number
----@field trigger function? -- This should always return a true / false
+---@field id number
+---@field trigger? fun(): boolean
 ---@field event WowEvent?
+---@field postTriggerTime? fun(): number
+---@field eventValidator? fun(): boolean
+---@field fallbackWidget? boolean
 
 --#endregion
 
