@@ -334,7 +334,8 @@
         "Stopwatch_Toggle",
         "Stopwatch_Play",
         "LFG_ROLE_NUM_SHORTAGE_TYPES",
-        "PVEFrame_ToggleFrame"
+        "PVEFrame_ToggleFrame",
+        "ToggleAllBags"
     ],
     "Lua.diagnostics.disable": [
         "duplicate-set-field",

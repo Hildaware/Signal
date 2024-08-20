@@ -167,9 +167,10 @@ function chatFrame:_DoCreate()
     local i = setmetatable({}, { __index = chatFrame.chatProto })
 
     local baseWidth = baseFrame.baseProto:GetWidgetWidth()
+    local actualWidth = baseWidth - 32
 
     local container = CreateFrame('Frame', nil, UIParent)
-    container:SetWidth(baseWidth)
+    container:SetWidth(actualWidth)
     container:SetHeight(ITEM_DEFAULT_HEIGHT)
 
     local chatType = container:CreateFontString(nil, 'BACKGROUND', 'GameFontNormal')
@@ -178,7 +179,7 @@ function chatFrame:_DoCreate()
 
     local iconFrame = CreateFrame('Frame', nil, container)
     iconFrame:SetPoint('TOPLEFT', chatType, 'BOTTOMLEFT', 0, -4)
-    iconFrame:SetWidth(baseWidth)
+    iconFrame:SetWidth(actualWidth)
     iconFrame:SetHeight(40)
     iconFrame:Hide()
 
@@ -193,23 +194,28 @@ function chatFrame:_DoCreate()
     iconTex:SetPoint('TOPLEFT', bgTex, 'TOPLEFT', 2, -2)
     iconTex:SetPoint('BOTTOMRIGHT', bgTex, 'BOTTOMRIGHT', -2, 2)
 
-    local iconLabel = iconFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormalTiny')
+    local iconLabel = iconFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormal')
     iconLabel:SetText('Player Name')
     iconLabel:SetJustifyH('CENTER')
     iconLabel:SetPoint('LEFT', iconTex, 'RIGHT', 4, 0)
 
     local contentFrame = CreateFrame('Frame', nil, container)
     contentFrame:SetPoint('TOPLEFT', iconFrame, 'BOTTOMLEFT', 0, -4)
-    contentFrame:SetWidth(baseWidth)
+    contentFrame:SetWidth(actualWidth)
     contentFrame:SetHeight(ITEM_DEFAULT_HEIGHT)
     contentFrame:Hide()
 
     local message = contentFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormalSmall')
     message:SetText('MESSAGE.')
+    message:SetTextColor(1.0, 1.0, 1.0, 1.0)
     message:SetWordWrap(true)
     message:SetJustifyH('LEFT')
     message:SetJustifyV('MIDDLE')
     message:SetAllPoints(contentFrame)
+    message:SetHeight(400)
+
+    -- utils:DebugFrame(iconFrame, { r = 1.0, g = 0.0, b = 0.0, a = 1.0 })
+    -- utils:DebugFrame(contentFrame, { r = 0.0, g = 1.0, b = 0.0, a = 1.0 })
 
     i.container = container
 
@@ -262,11 +268,16 @@ function chatFrame:OnEvent(chatType, ...)
     chatItem:SetChatType(chatType)
     chatItem:SetMessage(message)
 
-    local chatHeight = max(string.len(message) * 1.1, 45)
+    local lineHeight = chatItem.content.message:GetStringHeight()
+    local charactersPerLine = 54
+    local requiredLines = math.ceil(string.len(message) / charactersPerLine)
+    local chatHeight = max(requiredLines * lineHeight, 45)
+
     chatItem.content:SetHeight(chatHeight)
     widget:SetContent(chatItem.container)
 
-    widget.height = max(ITEM_DEFAULT_HEIGHT, chatHeight) + 44
+    local totalHeight = chatHeight + 100
+    widget.height = max(ITEM_DEFAULT_HEIGHT, totalHeight)
 
     chatItem.content:Show()
     chatItem.icon:Show()

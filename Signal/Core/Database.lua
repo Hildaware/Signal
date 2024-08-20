@@ -14,7 +14,7 @@ local defaults = {
             Enabled = true,
             Locked = true,
             NotificationGrowth = false,
-            WidgetWidth = 256,
+            WidgetWidth = 312,
             VisibilityTimes = {
                 Chat = 5.0
             },

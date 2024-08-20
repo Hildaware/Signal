@@ -512,6 +512,10 @@ function itemFrame:_DoCreate()
     contentFrame:SetHeight(ITEM_DEFAULT_HEIGHT)
     contentFrame:Hide()
 
+    contentFrame:SetScript('OnMouseDown', function()
+        _G['ToggleAllBags']()
+    end)
+
     local message = contentFrame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormal')
     message:SetText('MESSAGE')
     message:SetWordWrap(true)
@@ -580,6 +584,13 @@ function itemFrame:CreateIcon(item)
         local questTexture = iconFrame:CreateTexture(nil, 'OVERLAY')
         questTexture:SetAllPoints(iconFrame)
         questTexture:SetTexture(TEXTURE_ITEM_QUEST_BANG)
+    end
+
+    if item.isCosmetic then
+        local cosmeticTexture = iconFrame:CreateTexture(nil, 'OVERLAY')
+        cosmeticTexture:SetAllPoints(iconFrame)
+        cosmeticTexture:SetTexture('Interface\\ContainerFrame\\CosmeticIconBorder')
+        cosmeticTexture:SetAtlas('CosmeticIconFrame')
     end
 
     iconFrame:SetScript('OnEnter', function()

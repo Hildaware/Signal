@@ -26,8 +26,8 @@ local widgetBase = addon:GetModule('NotificationWidget')
 ---@field rewards table<number, CTARewards>
 local cta = widgetBase:New(Module, Type)
 
-local ITEM_DEFAULT_HEIGHT = 50
-local UPDATE_INTERVAL = 30
+local ITEM_DEFAULT_HEIGHT = 24
+local UPDATE_INTERVAL = 30 -- 30 seconds
 
 ---@enum InstanceType
 local INSTANCE_TYPE = {
@@ -193,6 +193,7 @@ function cta:Trigger()
 
     if #newRewards == 0 then return end
 
+    ---@type CTARewards[]
     local filteredRewards = {}
     for _, reward in pairs(newRewards) do
         if reward.tank or reward.healer or reward.dps then
@@ -201,6 +202,8 @@ function cta:Trigger()
     end
 
     if #filteredRewards == 0 then return end
+
+    table.sort(filteredRewards, function(a, b) return a.type < b.type end)
 
     local time = GetTime()
     local widget = baseFrame:Create(15) -- TODO: Config?
@@ -219,7 +222,7 @@ function cta:Trigger()
         frame:Show()
     end
 
-    local height = (#filteredRewards * (ITEM_DEFAULT_HEIGHT)) + 24
+    local height = (#filteredRewards * (ITEM_DEFAULT_HEIGHT)) + 32
     ctaFrame.content:SetHeight(height)
     ctaFrame.content:Show()
 
@@ -241,50 +244,58 @@ function cta:CreateInstanceWidget(reward)
     frame:SetWidth(baseFrame.baseProto:GetWidgetWidth())
     frame:SetHeight(ITEM_DEFAULT_HEIGHT)
 
-    local iconFrameWidth = 0
     local iconFrame = CreateFrame('Frame', nil, frame)
     iconFrame:SetHeight(ITEM_DEFAULT_HEIGHT)
     iconFrame:SetPoint('LEFT', frame, 'LEFT')
 
+    local iconSize = ITEM_DEFAULT_HEIGHT - 4
+
     local icons = {}
+    local iconPosition = 0
     if reward.tank then
-        iconFrameWidth = iconFrameWidth + ITEM_DEFAULT_HEIGHT - 12
         local hIcon = iconFrame:CreateTexture(nil, 'BACKGROUND')
-        hIcon:SetPoint('LEFT', iconFrame, 'LEFT')
-        hIcon:SetSize(ITEM_DEFAULT_HEIGHT - 16, ITEM_DEFAULT_HEIGHT - 16)
+        hIcon:SetPoint('LEFT', iconFrame, 'LEFT', iconPosition, 0)
+        hIcon:SetSize(iconSize, iconSize)
         hIcon:SetTexture('Interface\\LFGFrame\\UILFGPrompts')
         hIcon:SetAtlas('UI-LFG-RoleIcon-Tank')
 
         table.insert(icons, hIcon)
+        iconPosition = iconPosition + ITEM_DEFAULT_HEIGHT
     end
 
     if reward.healer then
-        iconFrameWidth = iconFrameWidth + ITEM_DEFAULT_HEIGHT - 12
         local hIcon = iconFrame:CreateTexture(nil, 'BACKGROUND')
-        hIcon:SetPoint('LEFT', icons[1] ~= nil and icons[1] or iconFrame, 'LEFT')
-        hIcon:SetSize(ITEM_DEFAULT_HEIGHT - 16, ITEM_DEFAULT_HEIGHT - 16)
+        hIcon:SetPoint('LEFT', iconFrame, 'LEFT', iconPosition, 0)
+        hIcon:SetSize(iconSize, iconSize)
         hIcon:SetTexture('Interface\\LFGFrame\\UILFGPrompts')
         hIcon:SetAtlas('UI-LFG-RoleIcon-Healer')
 
         table.insert(icons, hIcon)
+        iconPosition = iconPosition + ITEM_DEFAULT_HEIGHT
     end
 
     if reward.dps then
-        iconFrameWidth = iconFrameWidth + ITEM_DEFAULT_HEIGHT - 12
         local hIcon = iconFrame:CreateTexture(nil, 'BACKGROUND')
-        hIcon:SetPoint('LEFT', icons[1] ~= nil and icons[1] or icons[2] ~= nil and icons[2] or iconFrame, 'LEFT')
-        hIcon:SetSize(ITEM_DEFAULT_HEIGHT - 16, ITEM_DEFAULT_HEIGHT - 16)
+        hIcon:SetPoint('LEFT', iconFrame, 'LEFT', iconPosition, 0)
+        hIcon:SetSize(iconSize, iconSize)
         hIcon:SetTexture('Interface\\LFGFrame\\UILFGPrompts')
         hIcon:SetAtlas('UI-LFG-RoleIcon-DPS')
+
+        table.insert(icons, hIcon)
+        iconPosition = iconPosition + ITEM_DEFAULT_HEIGHT
     end
 
-    iconFrame:SetWidth(iconFrameWidth)
+    iconFrame:SetWidth(#icons * ITEM_DEFAULT_HEIGHT)
 
     local rewardName = frame:CreateFontString(nil, 'BACKGROUND', 'GameFontNormal')
     rewardName:SetJustifyH('LEFT')
     rewardName:SetJustifyV('MIDDLE')
+    rewardName:SetTextColor(1, 1, 1, 1)
     rewardName:SetPoint('LEFT', iconFrame, 'RIGHT', 4, 0)
-    rewardName:SetText(reward.name)
+
+    local rewardType = '|cFF00FFFF' .. (reward.type == INSTANCE_TYPE.RAID and 'Raid' or 'Dungeon') .. '|r'
+    local rewardFormatted = reward.name .. ' (' .. rewardType .. ')'
+    rewardName:SetText(rewardFormatted)
 
     frame:Hide()
 

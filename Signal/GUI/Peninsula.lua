@@ -45,7 +45,7 @@ function core.widget:GrowAnimation()
                 ticker:Cancel()
             end
         end,
-        256)
+        32)
 end
 
 function core.widget:ShrinkAnimation()
@@ -56,7 +56,7 @@ function core.widget:ShrinkAnimation()
                 ticker:Cancel()
             end
         end,
-        256)
+        32)
 end
 
 ---@param widget BasePeninsula

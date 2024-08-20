@@ -262,4 +262,13 @@ function utils:LightenColor(hexColor, amt)
     end
 end
 
+---comment
+---@param frame Frame
+---@param color ColorMixin
+function utils:DebugFrame(frame, color)
+    local tex = frame:CreateTexture(nil, 'BACKGROUND')
+    tex:SetAllPoints(frame)
+    tex:SetColorTexture(color.r, color.g, color.b, color.a or 1)
+end
+
 utils:Enable()

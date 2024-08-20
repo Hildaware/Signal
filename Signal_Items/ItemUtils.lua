@@ -27,6 +27,8 @@ ItemType = {
 ---@field isGear? boolean
 ---@field pQuality? string
 ---@field isQuest? boolean
+---@field isCosmetic? boolean
+---@field type Enum.ItemClass
 ---@field factionData? FactionData
 
 ---@class FactionData
@@ -65,18 +67,23 @@ function utils:FormatItemString(data)
     end
 
     -- Item Tertiaries
-    if data.itemType == ItemType.Item and data.isGear then
+    if data.type then
         message = message .. '\n'
-        if data.ilvl then
-            message = message .. 'i' .. data.ilvl
-        end
 
-        if data.tertiary then
-            message = message .. ' |cFF00FFFF' .. data.tertiary .. '|r'
-        end
+        message = message .. data.type:gsub("(%l)(%u)", "%1 %2") .. ' '
 
-        if data.sock then
-            message = message .. ' ' .. data.sock
+        if data.itemType == ItemType.Item and data.isGear then
+            if data.ilvl then
+                message = message .. 'i' .. data.ilvl
+            end
+
+            if data.tertiary then
+                message = message .. ' |cFF00FFFF' .. data.tertiary .. '|r'
+            end
+
+            if data.sock then
+                message = message .. ' ' .. data.sock
+            end
         end
     end
 
@@ -92,8 +99,7 @@ end
 ---@param stacks number
 ---@return ItemData?
 function utils:GetItemData(itemStr, stacks)
-    local itemName, link, quality, level, minLevel, type, subType, stackCount,
-    _, texture, price = C_Item.GetItemInfo(itemStr)
+    local itemName, link, quality, _, _, type, subType, _, _, texture, _ = C_Item.GetItemInfo(itemStr)
 
     if not link then return end
 
@@ -104,6 +110,9 @@ function utils:GetItemData(itemStr, stacks)
     local itemStats = C_Item.GetItemStats(link)
     local itemId = C_Item.GetItemIDForItemInfo(itemStr)
     local isGear = self:IsGear(type)
+
+    local itemType = type
+    local isCosmetic = C_Item.IsCosmeticItem(itemStr)
 
     local sockText = " ";
 
@@ -151,6 +160,7 @@ function utils:GetItemData(itemStr, stacks)
     local newItem = {
         time = GetTime(),
         id = itemId,
+        type = type,
         itemType = ItemType.Item,
         stacks = stacks,
         name = itemName,
@@ -163,6 +173,7 @@ function utils:GetItemData(itemStr, stacks)
         isGear = isGear or false,
         pQuality = (pQuality and CreateAtlasMarkup('professions-icon-quality-tier' .. pQuality .. '-inv', 32, 32)) or nil,
         isQuest = isQuest or nil,
+        isCosmetic = isCosmetic or nil,
         total = totalCount
     }
 

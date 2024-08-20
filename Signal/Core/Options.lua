@@ -67,8 +67,8 @@ function options:OnInitialize()
     LibStub("AceConfig-3.0"):RegisterOptionsTable(addonName, settings)
     self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(addonName, 'Signal')
 
-    addon:RegisterChatCommand('da', 'SlashCommand')
-    addon:RegisterChatCommand('Signal', 'SlashCommand')
+    addon:RegisterChatCommand('sig', 'SlashCommand')
+    addon:RegisterChatCommand('signal', 'SlashCommand')
 end
 
 ---@param key string
