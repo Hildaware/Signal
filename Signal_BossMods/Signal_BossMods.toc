@@ -1,0 +1,13 @@
+## Interface: 110000
+## Title: Signal - BossMods
+## Notes: Boss Mods Notifications for Signal
+## Authors: Sel
+## Version: 11.0.0
+## IconTexture: Interface\AddOns\Signal\Media\logo
+## RequiredDeps: Signal
+## OptionalDeps: DBM-Core, BigWigs
+## LoadOnDemand: 0
+## DefaultState: enabled
+## X-Curse-Project-ID: TODO
+
+Signal_BossMods.lua

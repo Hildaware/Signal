@@ -1,0 +1,13 @@
+## Interface: 110002
+## Title: Signal - Chat
+## Notes: Chat Notifications for Signal
+## Authors: Sel
+## Version: 10.2.7
+## IconTexture: Interface\AddOns\Signal\Media\logo
+## RequiredDeps: Signal
+## LoadOnDemand: 0
+## DefaultState: enabled
+## X-Curse-Project-ID: TODO
+
+Libs/Libs.xml
+Signal_Chat.lua

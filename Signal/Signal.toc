@@ -1,0 +1,17 @@
+## Interface: 110002
+## Title: Signal
+## Notes: All-In-One Notification Center
+## Authors: Sel
+## Version: 11.0.0
+## IconTexture: Interface\AddOns\Signal\Media\logo
+## SavedVariables: SignalDB
+## OptionalDeps: Masque
+## X-Curse-Project-ID: TODO
+
+Libs/Libs.xml
+Core/Core.xml
+GUI/Components/Components.xml
+GUI/Isles/Isles.xml
+GUI/NotificationWidgets/Widgets.xml
+GUI/GUI.xml
+Signal.lua
