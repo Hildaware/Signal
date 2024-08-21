@@ -209,7 +209,7 @@ function itemFrame:InitializeOptions()
     --- Options
     ---@type AceConfig.OptionsTable
     local itemOptions = {
-        name = 'Item Options',
+        name = 'Items',
         type = 'group',
         order = 2,
         args = {

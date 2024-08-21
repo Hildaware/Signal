@@ -28,7 +28,7 @@ end
 function addon:OnInitialize()
     _G['AddonCompartmentFrame']:RegisterAddon({
         text = "Signal",
-        icon = "",
+        icon = "Interface\\AddOns\\Signal\\Media\\Art\\logo",
         registerForAnyClick = true,
         notCheckable = true,
         func = addon.OnCompartmentClick,

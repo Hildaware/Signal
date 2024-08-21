@@ -154,9 +154,9 @@ function cta:OnInitialize()
     -- options
     ---@type AceConfig.OptionsTable
     local ctaOptions = {
-        name = 'Call To Arms Options',
+        name = 'Call To Arms',
         type = 'group',
-        order = 3,
+        order = 4,
         args = {
             enable = {
                 name = 'Enable',

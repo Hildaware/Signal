@@ -54,6 +54,105 @@ function bossMods.itemProto:Wipe()
     self.content:ClearAllPoints()
 end
 
+--#region Database
+
+---@param val number
+function database:SetBossModsDuration(val)
+    database.internal.global.BossMods.Duration = val
+end
+
+---@return number
+function database:GetBossModsDuration()
+    return database.internal.global.BossMods.Duration
+end
+
+---@param value boolean
+function database:SetBossModsState(value)
+    database.internal.global.BossMods.Enabled = value
+end
+
+function database:GetBossModsState()
+    return database.internal.global.BossMods.Enabled
+end
+
+function database:GetDBMDisableWarningFrame()
+    return database.internal.global.BossMods.DisableDBMWarnings
+end
+
+---@param value boolean
+function database:SetDBMDisableWarningFrame(value)
+    database.internal.global.BossMods.DisableDBMWarnings = value
+    bossMods:RefreshOptions()
+end
+
+function database:GetDBMDisableSpecialWarningFrame()
+    return database.internal.global.BossMods.DisableDBMSpecialWarnings
+end
+
+---@param value boolean
+function database:SetDBMDisableSpecialWarningFrame(value)
+    database.internal.global.BossMods.DisableDBMSpecialWarnings = value
+    bossMods:RefreshOptions()
+end
+
+--#endregion
+
+function bossMods:InitializeOptions()
+    ---@type AceConfig.OptionsTable
+    local bossModsOptions = {
+        name = 'Boss Mods',
+        type = 'group',
+        order = 3,
+        args = {
+            enable = {
+                order = 1,
+                name = 'Enable',
+                type = 'toggle',
+                get = function() return database:GetBossModsState() end,
+                set = function(_, val) database:SetBossModsState(val) end
+            },
+            duration = {
+                order = 2,
+                name = 'Duration',
+                type = 'range',
+                min = 0,
+                max = 30,
+                get = function() return database:GetBossModsDuration() end,
+                set = function(_, val) database:SetBossModsDuration(val) end
+            },
+            dbmHeader = {
+                order = 3,
+                name = 'Deadly Boss Mods',
+                type = 'header',
+            },
+            dbmInfo = {
+                order = 4,
+                name = 'Options specific to DBM Notifications',
+                type = 'description',
+            },
+            disableDbmWarnings = {
+                order = 5,
+                name = 'Disable Default Warnings',
+                desc = 'Removes the default DBM Warnings Popup frame. Tnis cannot be disabled through DBM itself.',
+                type = 'toggle',
+                get = function() return database:GetDBMDisableWarningFrame() end,
+                set = function(_, val) database:SetDBMDisableWarningFrame(val) end
+            },
+            disableDbmSpecialWarnings = {
+                order = 6,
+                name = 'Disable Default Specials',
+                desc =
+                'Removes the default DBM Special Warnings Popup frame. Tnis cannot be disabled through DBM itself.',
+                type = 'toggle',
+                get = function() return database:GetDBMDisableSpecialWarningFrame() end,
+                set = function(_, val) database:SetDBMDisableSpecialWarningFrame(val) end
+            },
+        }
+    }
+
+    options:AddSettings('bossModsOptions', bossModsOptions)
+end
+
 function bossMods:OnInitialize()
     self:RegisterPool(self._DoCreate, self._DoReset)
 
@@ -67,17 +166,23 @@ function bossMods:OnInitialize()
             function(...) self:OnEvent(MOD_TYPE.BigWigs, ...) end)
     end
 
-    if _G['DBMWarning'] ~= nil then
-        _G['DBMWarning']:Hide()
+    self:InitializeOptions()
+
+    if database.internal.global.BossMods == nil then
+        database.internal.global.BossMods = {
+            Enabled = true,
+            Duration = 5,
+            DisableDBMWarnings = true,
+            DisableDBMSpecialWarnings = true
+        }
     end
 
-    if _G['DBMSpecialWarning'] ~= nil then
-        _G['DBMSpecialWarning']:Hide()
-    end
-    -- TODO: Options
+    self:RefreshOptions()
 end
 
 function bossMods:OnEvent(eventType, ...)
+    if not database:GetBossModsState() then return end
+
     local messageText, iconTexture = nil, nil
     if eventType == MOD_TYPE.DBM then
         local _, message, icon, _, _, _, _ = ...
@@ -91,8 +196,7 @@ function bossMods:OnEvent(eventType, ...)
 
     if messageText == nil or iconTexture == nil then return end
 
-    local viewTime = 5
-    local widget = baseFrame:Create(viewTime)
+    local widget = baseFrame:Create(database:GetBossModsDuration())
     widget:SetType(Type)
 
     ---@type BossMod
@@ -153,6 +257,22 @@ end
 
 function bossMods:_DoReset()
     -- TODO
+end
+
+function bossMods:RefreshOptions()
+    if dbm == nil then return end
+
+    if database:GetDBMDisableWarningFrame() then
+        _G['DBMWarning']:Hide()
+    else
+        _G['DBMWarning']:Show()
+    end
+
+    if database:GetDBMDisableSpecialWarningFrame() then
+        _G['DBMSpecialWarning']:Hide()
+    else
+        _G['DBMSpecialWarning']:Show()
+    end
 end
 
 bossMods:Enable()
