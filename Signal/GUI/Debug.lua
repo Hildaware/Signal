@@ -11,6 +11,9 @@ function debug:Show()
     ---@class ItemFrame: AceModule
     local itemFrame = addon:GetModule('ItemFrame')
 
+    ---@class Achievements: NotificationType
+    local achievements = addon:GetModule('Achievements')
+
     local name = UnitName('player')
     local server = GetNormalizedRealmName()
     local playerName = name .. '-' .. server
@@ -25,6 +28,16 @@ function debug:Show()
 
     for _, item in ipairs(items) do
         itemFrame:OnEvent(99, 'CHAT_MSG_LOOT', item, playerName)
+    end
+
+    local achievementIds = {
+        19458,
+        19879,
+        10994
+    }
+
+    for _, id in ipairs(achievementIds) do
+        achievements:OnEvent('', id)
     end
 end
 

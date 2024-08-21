@@ -95,8 +95,7 @@ function cta:ParseRewards(instanceId, instanceName, roleShortage, instanceType)
     local isNew = false
     local lastTime = GetTime()
     if self.rewards[instanceId] ~= nil then
-        if self.rewards[instanceId].time > GetTime() - 600 then
-            lastTime = self.rewards[instanceId].time
+        if self.rewards[instanceId].time < GetTime() - 600 then
             isNew = true
         else
             lastTime = self.rewards[instanceId].time

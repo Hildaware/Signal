@@ -1,13 +1,12 @@
 ## Interface: 110002
-## Title: Signal - BossMods
-## Notes: Boss Mods Notifications for Signal
+## Title: Signal - Achievements
+## Notes: Achievement Notifications for Signal
 ## Authors: Sel
 ## Version: 11.0.0
 ## IconTexture: Interface\AddOns\Signal\Media\logo
 ## RequiredDeps: Signal
-## OptionalDeps: DBM-Core, BigWigs
 ## LoadOnDemand: 0
 ## DefaultState: enabled
 ## X-Curse-Project-ID: TODO
 
-Signal_BossMods.lua
+Signal_Achievements.lua

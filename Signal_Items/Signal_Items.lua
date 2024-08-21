@@ -384,7 +384,6 @@ function itemFrame:OnEvent(eventType, ...)
         -- height
         local height = widget:GetHeaderHeight()
         height = height + item.content.message:GetHeight()
-        -- height = height + item.content.itemType:GetHeight()
 
         widget.height = max(ITEM_DEFAULT_HEIGHT, height)
 
