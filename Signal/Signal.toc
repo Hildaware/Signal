@@ -3,7 +3,7 @@
 ## Notes: All-In-One Notification Center
 ## Authors: Sel
 ## Version: 11.0.0
-## IconTexture: Interface\AddOns\Signal\Media\logo
+## IconTexture: Interface\AddOns\Signal\Media\Art\logo
 ## SavedVariables: SignalDB
 ## OptionalDeps: Masque
 ## X-Curse-Project-ID: TODO

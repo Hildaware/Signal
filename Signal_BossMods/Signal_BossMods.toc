@@ -3,7 +3,7 @@
 ## Notes: Boss Mods Notifications for Signal
 ## Authors: Sel
 ## Version: 11.0.0
-## IconTexture: Interface\AddOns\Signal\Media\logo
+## IconTexture: Interface\AddOns\Signal\Media\Art\logo_g
 ## RequiredDeps: Signal
 ## OptionalDeps: DBM-Core, BigWigs
 ## LoadOnDemand: 0
