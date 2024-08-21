@@ -9,6 +9,10 @@ local Module = 'BossMods'
 ---@field RegisterCallback fun(self, event: string, callback: function)
 local dbm = _G['DBM']
 
+---@class BigWigs
+---@field RegisterMessage fun(self, event: string, callback:function)
+local bigWigs = _G['BigWigsLoader']
+
 ---@class Events: AceModule
 local events = addon:GetModule('Events')
 
@@ -28,6 +32,11 @@ local widgetBase = addon:GetModule('NotificationWidget')
 local bossMods = widgetBase:New(Module, Type)
 
 local ITEM_DEFAULT_HEIGHT = 50
+
+local MOD_TYPE = {
+    DBM = 1,
+    BigWigs = 2
+}
 
 ---@class (exact) BossMod : SignalItem
 ---@field content ItemContent
@@ -50,7 +59,12 @@ function bossMods:OnInitialize()
 
     if dbm ~= nil then
         dbm:RegisterCallback('DBM_Announce',
-            function(...) self:OnEvent(...) end)
+            function(...) self:OnEvent(MOD_TYPE.DBM, ...) end)
+    end
+
+    if bigWigs ~= nil then
+        bigWigs.RegisterMessage(self, 'BigWigs_Message',
+            function(...) self:OnEvent(MOD_TYPE.BigWigs, ...) end)
     end
 
     if _G['DBMWarning'] ~= nil then
@@ -63,8 +77,19 @@ function bossMods:OnInitialize()
     -- TODO: Options
 end
 
-function bossMods:OnEvent(_, ...)
-    local message, icon, _, spellId, _, count = ...
+function bossMods:OnEvent(eventType, ...)
+    local messageText, iconTexture = nil, nil
+    if eventType == MOD_TYPE.DBM then
+        local _, message, icon, _, _, _, _ = ...
+        messageText = message
+        iconTexture = icon
+    else
+        local _, _, _, text, _, icon = ...
+        messageText = text
+        iconTexture = icon
+    end
+
+    if messageText == nil or iconTexture == nil then return end
 
     local viewTime = 5
     local widget = baseFrame:Create(viewTime)
@@ -72,8 +97,8 @@ function bossMods:OnEvent(_, ...)
 
     ---@type BossMod
     local frame = self:Create()
-    frame.icon.texture:SetTexture(icon)
-    frame.content.message:SetText(message)
+    frame.icon.texture:SetTexture(iconTexture)
+    frame.content.message:SetText(messageText)
 
     widget:SetIcon(frame.icon)
     widget:SetContent(frame.content)
