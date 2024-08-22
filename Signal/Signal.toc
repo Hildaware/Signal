@@ -2,11 +2,11 @@
 ## Title: Signal
 ## Notes: All-In-One Notification Center
 ## Authors: Sel
-## Version: 11.0.0
+## Version: 11.0.1
 ## IconTexture: Interface\AddOns\Signal\Media\Art\logo
 ## SavedVariables: SignalDB
 ## OptionalDeps: Masque
-## X-Curse-Project-ID: TODO
+## X-Curse-Project-ID: 1088152
 
 Libs/Libs.xml
 Core/Core.xml

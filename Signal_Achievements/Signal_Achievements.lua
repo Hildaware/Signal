@@ -41,20 +41,82 @@ function achievements.itemProto:Wipe()
     self.content:ClearAllPoints()
 end
 
+--#region Database
+
+---@param val number
+function database:SetAchievementsDuration(val)
+    database.internal.global.Achievements.Duration = val
+end
+
+---@return number
+function database:GetAchievementsDuration()
+    return database.internal.global.Achievements.Duration
+end
+
+---@param value boolean
+function database:SetAchievementsState(value)
+    database.internal.global.Achievements.Enabled = value
+end
+
+function database:GetAchievementsState()
+    return database.internal.global.Achievements.Enabled
+end
+
+--#endregion
+
+function achievements:InitializeOptions()
+    ---@type AceConfig.OptionsTable
+    local achievementOptions = {
+        name = 'Achievements',
+        type = 'group',
+        order = 3,
+        args = {
+            enable = {
+                order = 1,
+                name = 'Enable',
+                type = 'toggle',
+                get = function() return database:GetAchievementsState() end,
+                set = function(_, val) database:SetAchievementsState(val) end
+            },
+            duration = {
+                order = 2,
+                name = 'Duration',
+                type = 'range',
+                min = 0,
+                max = 30,
+                get = function() return database:GetAchievementsDuration() end,
+                set = function(_, val) database:SetAchievementsDuration(val) end
+            },
+        }
+    }
+
+    options:AddSettings('achievementOptions', achievementOptions)
+end
+
 function achievements:OnInitialize()
     self:RegisterPool(self._DoCreate, self._DoReset)
 
     events:RegisterEvent('ACHIEVEMENT_EARNED', function(...) self:OnEvent(...) end)
+
+    -- Options
+    self:InitializeOptions()
+
+    if database.internal.global.Achievements == nil then
+        database.internal.global.Achievements = {
+            Enabled = true,
+            Duration = 12
+        }
+    end
 end
 
 function achievements:OnEvent(_, ...)
+    if not database:GetAchievementsState() then return end
     local id = ...
     if id == nil then return end
 
     local _, name, _, _, _, _, _, _, _, icon, rewardText, _ = GetAchievementInfo(id)
 
-    local viewTime = 10
-    local widget = baseFrame:Create(viewTime)
+    local widget = baseFrame:Create(database:GetAchievementsDuration())
     widget:SetType(Type)
 
     ---@type BossMod

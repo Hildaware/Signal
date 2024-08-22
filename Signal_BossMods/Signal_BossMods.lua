@@ -102,7 +102,7 @@ function bossMods:InitializeOptions()
     local bossModsOptions = {
         name = 'Boss Mods',
         type = 'group',
-        order = 3,
+        order = 4,
         args = {
             enable = {
                 order = 1,

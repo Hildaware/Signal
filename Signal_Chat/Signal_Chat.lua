@@ -241,7 +241,7 @@ function chatFrame:OnEvent(chatType, ...)
 
     local playerClass = ''
     if chatType ~= CHAT_TYPE.BNET then
-        if playerId == nil or playerId == UnitGUID('player') then return end
+        -- if playerId == nil or playerId == UnitGUID('player') then return end
         local _, engClass, _, _, _, _, _ = GetPlayerInfoByGUID(playerId)
         if engClass == nil or engClass == '' then return end
         playerClass = engClass

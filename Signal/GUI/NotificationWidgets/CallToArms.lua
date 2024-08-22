@@ -78,6 +78,16 @@ function database:GetCallToArmsEnabled()
     return database.internal.global.CallToArms.Enabled
 end
 
+---@param val number
+function database:SetCTADuration(val)
+    database.internal.global.CallToArms.Duration = val
+end
+
+---@return number
+function database:GetCTADuration()
+    return database.internal.global.CallToArms.Duration
+end
+
 function cta.proto:Wipe()
     self.content:Hide()
     self.content:SetParent(nil)
@@ -156,7 +166,7 @@ function cta:OnInitialize()
     local ctaOptions = {
         name = 'Call To Arms',
         type = 'group',
-        order = 4,
+        order = 5,
         args = {
             enable = {
                 name = 'Enable',
@@ -165,7 +175,16 @@ function cta:OnInitialize()
                 order = 1,
                 get = function() return database:GetCallToArmsEnabled() end,
                 set = function(_, val) database:SetCallToArmsEnabled(val) end
-            }
+            },
+            duration = {
+                order = 2,
+                name = 'Duration',
+                type = 'range',
+                min = 0,
+                max = 30,
+                get = function() return database:GetCTADuration() end,
+                set = function(_, val) database:SetCTADuration(val) end
+            },
         }
     }
 
@@ -174,7 +193,8 @@ function cta:OnInitialize()
     -- db
     if database.internal.global.CallToArms == nil then
         database.internal.global.CallToArms = {
-            Enabled = true
+            Enabled = true,
+            Duration = 12
         }
     end
 end
@@ -204,8 +224,7 @@ function cta:Trigger()
 
     table.sort(filteredRewards, function(a, b) return a.type < b.type end)
 
-    local time = GetTime()
-    local widget = baseFrame:Create(15) -- TODO: Config?
+    local widget = baseFrame:Create(database:GetCTADuration())
     widget:SetType(Type)
     widget:WithoutIcon()
 
